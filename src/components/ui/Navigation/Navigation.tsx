@@ -74,7 +74,7 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
 
   const handleLoguoutBtn = async () => {
     removeCookie("userInfo");
-    await signOut();
+    await signOut( { callbackUrl: 'http://localhost:3000/' })
   };
 
   return (
