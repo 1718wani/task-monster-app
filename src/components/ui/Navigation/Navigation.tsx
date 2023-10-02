@@ -17,7 +17,9 @@ import {
 import { MobileProps, NavItemProps } from "./NavigationType";
 import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
 import { useCookies } from "react-cookie";
+
 import { signOut } from "next-auth/react";
+
 
 // アイコン画像をログインユーザーによって切り替えたい
 
@@ -59,6 +61,7 @@ export const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
 };
 
 export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
+
   const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
   console.log(cookies, "cookieの値だよん");
   //Googleでログインすると以下のような値が入っている
@@ -104,7 +107,6 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       >
         Monster Task
       </Text>
-
       <HStack spacing={{ base: "0", md: "6" }}>
         <IconButton
           size="lg"
@@ -128,16 +130,17 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                       : "https://bit.ly/broken-link"
                   }
                 />
-
                 <VStack
                   display={{ base: "none", md: "flex" }}
                   alignItems="flex-start"
                   spacing="1px"
                   ml="2"
                 >
+
                   <Text suppressHydrationWarning fontSize="sm">
                     {cookies.userInfo ? cookies.userInfo.name : "No name"}
                   </Text>
+
                 </VStack>
                 <Box display={{ base: "none", md: "flex" }}>
                   <FiChevronDown />
@@ -148,10 +151,12 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
               bg={useColorModeValue("white", "gray.900")}
               borderColor={useColorModeValue("gray.200", "gray.700")}
             >
+
               <MenuItem>プロフィール</MenuItem>
 
               <MenuDivider />
               <MenuItem onClick={handleLoguoutBtn}>ログアウト</MenuItem>
+
             </MenuList>
           </Menu>
         </Flex>
