@@ -28,8 +28,6 @@ import { GetServerSidePropsContext } from "next";
 import { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import { taskForDisplay, tasksForHome } from "~/types/AllTypes";
-import HoverClapMenu from "./ui/Menu/HoverClapMenu";
-import { Toaster } from "react-hot-toast";
 import {
   RegisterationFailureNotification,
   SendReactionNotification,

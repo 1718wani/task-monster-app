@@ -138,7 +138,7 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 >
 
                   <Text suppressHydrationWarning fontSize="sm">
-                    {cookies.userInfo ? cookies.userInfo.name : "No name"}
+                    {cookies.userInfo ? cookies.userInfo.id : "No name"}
                   </Text>
 
                 </VStack>
