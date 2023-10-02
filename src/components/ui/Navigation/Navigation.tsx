@@ -17,7 +17,6 @@ import {
 import { MobileProps, NavItemProps } from "./NavigationType";
 import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
 import { useCookies } from "react-cookie";
-import LogoutBtn from "./LogoutBtn";
 import { signOut } from "next-auth/react";
 
 // アイコン画像をログインユーザーによって切り替えたい
