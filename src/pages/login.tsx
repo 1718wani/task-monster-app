@@ -7,7 +7,7 @@ import { string } from "zod";
 
 const Login: NextPage = () => {
   const { data: session } = useSession();
-  const [cookies, setCookie, removeCookie] = useCookies(["userId"]);
+  const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
   console.log(session, "sessionの値");
 
   useEffect(() => {
@@ -16,7 +16,7 @@ const Login: NextPage = () => {
       axios
         .get("http://localhost:3000/api/userid")
         .then((response) => {
-          setCookie("userId", response.data.id);
+          setCookie("userInfo", response.data);
         })
         .catch((err) => {
           console.error("Error fetching userId:", err);

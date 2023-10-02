@@ -18,6 +18,9 @@ import { MobileProps, NavItemProps } from "./NavigationType";
 import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
 import { useCookies } from "react-cookie";
 
+import { signOut } from "next-auth/react";
+
+
 // アイコン画像をログインユーザーによって切り替えたい
 
 export const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
@@ -58,6 +61,24 @@ export const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
 };
 
 export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
+
+  const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
+  console.log(cookies, "cookieの値だよん");
+  //Googleでログインすると以下のような値が入っている
+  //   {
+  //     "id": "cln0dunqp0005fw2lh3yq7nkl",
+  //     "name": "三谷育也",
+  //     "email": "ikuya1293@gmail.com",
+  //     "emailVerified": null,
+  //     "image": "https://lh3.googleusercontent.com/a/ACg8ocLJPLFvev1da4GBlV3tTcmrFmsQIiLPqjt7D5hX1hBYOR8=s96-c",
+  //     "completedMinutes": 0
+  // }
+
+  const handleLoguoutBtn = async () => {
+    removeCookie("userInfo");
+    await signOut( { callbackUrl: 'http://localhost:3000/' })
+  };
+
   return (
     <Flex
       ml={{ base: 0, md: 60 }}
@@ -86,7 +107,6 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
       >
         Monster Task
       </Text>
-
       <HStack spacing={{ base: "0", md: "6" }}>
         <IconButton
           size="lg"
@@ -105,7 +125,9 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 <Avatar
                   size={"sm"}
                   src={
-                    "https://images.unsplash.com/photo-1619946794135-5bc917a27793?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=b616b2c5b373a80ffc9636ba24f7a4a9"
+                    cookies.userInfo
+                      ? cookies.userInfo.image
+                      : "https://bit.ly/broken-link"
                   }
                 />
                 <VStack
@@ -114,7 +136,11 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                   spacing="1px"
                   ml="2"
                 >
-                  <Text fontSize="sm">Justina Clark</Text>
+
+                  <Text suppressHydrationWarning fontSize="sm">
+                    {cookies.userInfo ? cookies.userInfo.name : "No name"}
+                  </Text>
+
                 </VStack>
                 <Box display={{ base: "none", md: "flex" }}>
                   <FiChevronDown />
@@ -125,11 +151,12 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
               bg={useColorModeValue("white", "gray.900")}
               borderColor={useColorModeValue("gray.200", "gray.700")}
             >
-              <MenuItem>Profile</MenuItem>
-              <MenuItem>Settings</MenuItem>
-              <MenuItem>Billing</MenuItem>
+
+              <MenuItem>プロフィール</MenuItem>
+
               <MenuDivider />
-              <MenuItem>Sign out</MenuItem>
+              <MenuItem onClick={handleLoguoutBtn}>ログアウト</MenuItem>
+
             </MenuList>
           </Menu>
         </Flex>
