@@ -1,4 +1,18 @@
-import { Button, Grid } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Grid,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Text,
+  Center,
+} from "@chakra-ui/react";
 import Head from "next/head";
 import Link from "next/link";
 import TodoCardComponent from "~/components/TodoCardComponent";
@@ -10,13 +24,24 @@ import { useRouter } from "next/router";
 import { supabase } from "~/lib/supabaseClient";
 import { taskForDisplay, tasksForHome } from "~/types/AllTypes";
 import { CreateNewMonsterButtonComponent } from "~/components/ui/Button/Button";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 export default function HomeList({ tasks }: tasksForHome) {
   const router = useRouter();
+  const { data: session } = useSession();
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const clickHandler = async () => {
     await router.push("/createtodo");
   };
+  console.log(session, "sessionの値");
+
+  useEffect(() => {
+    if (!session) {
+      onOpen();
+    }
+  }, [session, onOpen]);
 
   return (
     <>
@@ -36,7 +61,26 @@ export default function HomeList({ tasks }: tasksForHome) {
         ))}
       </Grid>
 
-      <CreateNewMonsterButtonComponent onClick={clickHandler} /> {/* 新しいコンポーネントを使用 */}
+      <CreateNewMonsterButtonComponent onClick={clickHandler} />
+      <Modal closeOnOverlayClick={false} isCentered isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay
+          bg="blackAlpha.400"
+          backdropFilter="blur(3px)"
+          backdropInvert="40%"
+          backdropBlur="2px"
+        />
+        <ModalContent >
+          <ModalHeader>ようこそ！</ModalHeader>
+          <ModalBody>
+            <Text>
+              ログインボタンよりGoogleアカウント、もしくはメールアドレスでログイン・サインアップしてください。
+            </Text>
+            <Center p={5}>
+              <Button  onClick={() => signIn(undefined, { callbackUrl: 'http://localhost:3000/' })} colorScheme="teal">ログイン</Button>
+            </Center>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
