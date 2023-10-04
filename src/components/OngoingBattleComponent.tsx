@@ -32,6 +32,7 @@ import {
   RegisterationFailureNotification,
   SendReactionNotification,
 } from "~/notifications/notifications";
+import Pusher from 'pusher-js';
 
 export const OngoingBattleComponents = () => {
   const [cookies, setCookie, removeCookie] = useCookies(["userId"]);
@@ -39,10 +40,6 @@ export const OngoingBattleComponents = () => {
   console.log(cookies, "これがクッキー");
   const userId = cookies.userId as string;
   console.log(userId, "これがuserId");
-
-  const sendComment = () => {
-    SendReactionNotification();
-  };
 
   useEffect(() => {
     // APIからデータを非同期でフェッチします。
@@ -68,6 +65,30 @@ export const OngoingBattleComponents = () => {
       console.error("APIからデータの取得に失敗しました:", error);
     });
   }, []);
+
+  useEffect(() => {
+    const key = process.env.PUSHER_APP_KEY;
+    const cluster = process.env.PUSHER_APP_CLUSTER;
+    if (!key || !cluster){
+      console.log("key or cluster is not defined");
+      return;
+    } 
+    // Pusherのセットアップ
+    const pusher = new Pusher(key, {
+      cluster: cluster,
+    });
+    console.log(pusher, "これがpusher");
+
+    return () => {
+      // コンポーネントのアンマウント時にPusher接続をクローズ
+      pusher.disconnect();
+    };
+  }, []);
+
+  const sendComment = () => {
+    SendReactionNotification();
+  };
+
 
   return (
     <>
