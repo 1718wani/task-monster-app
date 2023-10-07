@@ -32,7 +32,8 @@ import {
   RegisterationFailureNotification,
   SendReactionNotification,
 } from "~/notifications/notifications";
-import Pusher from 'pusher-js';
+import Pusher from "pusher-js";
+import { env } from "process";
 
 export const OngoingBattleComponents = () => {
   const [cookies, setCookie, removeCookie] = useCookies(["userId"]);
@@ -67,12 +68,12 @@ export const OngoingBattleComponents = () => {
   }, []);
 
   useEffect(() => {
-    const key = process.env.PUSHER_APP_KEY;
-    const cluster = process.env.PUSHER_APP_CLUSTER;
-    if (!key || !cluster){
+    const key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY;
+    const cluster = process.env.NEXT_PUBLIC_PUSHER_APP_CLUSTER;
+    if (!key || !cluster) {
       console.log("key or cluster is not defined");
       return;
-    } 
+    }
     // Pusherのセットアップ
     const pusher = new Pusher(key, {
       cluster: cluster,
@@ -85,10 +86,20 @@ export const OngoingBattleComponents = () => {
     };
   }, []);
 
-  const sendComment = () => {
-    SendReactionNotification();
-  };
+  const sendComment = async (receiverUserId:string,reaction:string) => {
+    try {
+      const response = await axios.post("/api/trigger-notification", {
+        senderUserId: cookies.userId,
+        receiverUserId: receiverUserId,
+        reaction: reaction,
+      });
+      console.log(response.data); // "Notification triggered"と表示されるはず
+    } catch (error) {
+      console.error(error);
+    }
 
+    SendReactionNotification(receiverUserId, reaction);
+  };
 
   return (
     <>
@@ -127,10 +138,10 @@ export const OngoingBattleComponents = () => {
                 </HStack>
               </MenuButton>
             </Tooltip>
-            <MenuList onClick={sendComment}>
-              <MenuItem>ナイスファイト！👏</MenuItem>
-              <MenuItem>わたしも頑張ります！💪</MenuItem>
-              <MenuItem>一緒にがんばりましょう🤝</MenuItem>
+            <MenuList >
+                <MenuItem onClick={async () => await sendComment(task.userId,"👏")}>ナイスファイト！👏</MenuItem>
+              <MenuItem onClick={async () => await sendComment(task.userId,"💪")}>わたしも頑張ります！💪</MenuItem>
+              <MenuItem onClick={async () => await sendComment(task.userId,"🤝")}>一緒にがんばりましょう🤝</MenuItem>
             </MenuList>
           </Menu>
         </>

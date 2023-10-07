@@ -62,7 +62,7 @@ export const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
 
 export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
 
-  const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
+  const [cookies, setCookie, removeCookie] = useCookies(["userId"]);
   console.log(cookies, "cookieの値だよん");
   //Googleでログインすると以下のような値が入っている
   //   {
@@ -75,7 +75,7 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
   // }
 
   const handleLoguoutBtn = async () => {
-    removeCookie("userInfo");
+    removeCookie("userId");
     await signOut( { callbackUrl: 'http://localhost:3000/' })
   };
 
@@ -138,7 +138,7 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 >
 
                   <Text suppressHydrationWarning fontSize="sm">
-                    {cookies.userInfo ? cookies.userInfo.id : "No name"}
+                    {cookies.userId ? cookies.userId : "No name"}
                   </Text>
 
                 </VStack>

@@ -28,11 +28,14 @@ import { taskForDisplay, tasksForHome } from "~/types/AllTypes";
 import { CreateNewMonsterButtonComponent } from "~/components/ui/Button/Button";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import { NotificationReceiverComponent } from "~/components/NotificationReceiverComponent";
 
 export default function HomeList({ tasks }: tasksForHome) {
   const router = useRouter();
   const { data: session, status } = useSession(); // status を取得
   const [isLoaded, setIsLoaded] = useState(false); // 新しい state を追加
+  const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
+  console.log(cookies.userId, "これがクッキーなんだよねやっぱり")
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const clickHandler = async () => {
@@ -68,6 +71,7 @@ export default function HomeList({ tasks }: tasksForHome) {
 
   return (
     <>
+      <NotificationReceiverComponent receiverUserId={cookies.userId} />
       <Grid templateColumns={["1fr", null, "1fr 1fr"]} gap={1}>
         {tasks.map((task) => (
           <TodoCardComponent
