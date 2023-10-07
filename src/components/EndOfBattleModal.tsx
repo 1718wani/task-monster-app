@@ -20,7 +20,7 @@ import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
-import { RegisterationSuccessNotification } from "~/notifications/notifications";
+import { CompleteBattleSuccess, RegisterationSuccessNotification } from "~/notifications/notifications";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PublishUpdateSchema } from "~/schemas/zodSchema";
 
@@ -62,7 +62,7 @@ export const EndOfBattleModal = ({ isOpen, onClose }) => {
       console.log(response.data, "これがレスポンス内容よ！");
 
       await router.push("/");
-      RegisterationSuccessNotification();
+      CompleteBattleSuccess();
     } catch (error) {
       console.error("Error creating task:", error);
     } finally {
