@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 import { prisma } from "~/server/db";
 
@@ -11,7 +11,7 @@ export default async function handler (
   const { method } = req;
   switch (method) {
       case 'GET':
-        if (!session || !session.user?.email) {
+        if (!session?.user?.email) {
             return res.status(401).json({ error: "Not authenticated" });
           }
         
