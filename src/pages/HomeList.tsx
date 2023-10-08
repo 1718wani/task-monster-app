@@ -35,6 +35,7 @@ export default function HomeList({ tasks }: tasksForHome) {
   const { data: session, status } = useSession(); // status を取得
   const [isLoaded, setIsLoaded] = useState(false); // 新しい state を追加
   const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
+  
   console.log(cookies.userId, "これがクッキーなんだよねやっぱり")
 
   const { isOpen, onOpen, onClose } = useDisclosure();

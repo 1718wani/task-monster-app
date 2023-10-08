@@ -9,7 +9,6 @@ import {
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { Toaster, toast } from "react-hot-toast";
 import { RegisterationFailureNotification, RegisterationSuccessNotification } from "~/notifications/notifications";
 
 type formInputs = {
