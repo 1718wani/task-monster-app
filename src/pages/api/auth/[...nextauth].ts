@@ -25,6 +25,9 @@ export const authOptions: NextAuthOptions = {
       session.user.image = user.image;
       return session;
     },
+    redirect({ baseUrl }) {
+      return baseUrl;
+    }
   },
 };
 export default NextAuth(authOptions);

@@ -16,10 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { MobileProps, NavItemProps } from "./NavigationType";
 import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
-import { useCookies } from "react-cookie";
 
-import { signOut } from "next-auth/react";
-
+import { signOut, useSession } from "next-auth/react";
 
 // アイコン画像をログインユーザーによって切り替えたい
 
@@ -61,9 +59,7 @@ export const NavItem = ({ icon, children, ...rest }: NavItemProps) => {
 };
 
 export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
-
-  const [cookies, setCookie, removeCookie] = useCookies(["userId"]);
-  console.log(cookies, "cookieの値だよん");
+  const { data: session } = useSession();
   //Googleでログインすると以下のような値が入っている
   //   {
   //     "id": "cln0dunqp0005fw2lh3yq7nkl",
@@ -75,8 +71,7 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
   // }
 
   const handleLoguoutBtn = async () => {
-    removeCookie("userId");
-    await signOut( { callbackUrl: 'http://localhost:3000/' })
+    await signOut({ callbackUrl: "http://localhost:3000/" });
   };
 
   return (
@@ -125,8 +120,8 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                 <Avatar
                   size={"sm"}
                   src={
-                    cookies.userInfo
-                      ? cookies.userInfo.image
+                    session?.user.image
+                      ? session?.user.image
                       : "https://bit.ly/broken-link"
                   }
                 />
@@ -136,11 +131,9 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
                   spacing="1px"
                   ml="2"
                 >
-
                   <Text suppressHydrationWarning fontSize="sm">
-                    {cookies.userId ? cookies.userId : "No name"}
+                    {session?.user.userId ? session.user.userId : "No Id"}
                   </Text>
-
                 </VStack>
                 <Box display={{ base: "none", md: "flex" }}>
                   <FiChevronDown />
@@ -151,12 +144,10 @@ export const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
               bg={useColorModeValue("white", "gray.900")}
               borderColor={useColorModeValue("gray.200", "gray.700")}
             >
-
               <MenuItem>プロフィール</MenuItem>
 
               <MenuDivider />
               <MenuItem onClick={handleLoguoutBtn}>ログアウト</MenuItem>
-
             </MenuList>
           </Menu>
         </Flex>

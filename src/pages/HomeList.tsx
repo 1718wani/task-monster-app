@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Grid,
   useDisclosure,
@@ -7,24 +6,16 @@ import {
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalFooter,
   ModalBody,
-  ModalCloseButton,
-  Text,
   Center,
   Spinner,
   VStack,
+  Text,
 } from "@chakra-ui/react";
-import Head from "next/head";
-import Link from "next/link";
 import TodoCardComponent from "~/components/TodoCardComponent";
-import axios from "axios";
-import { useCookies } from "react-cookie";
-import { FaSearchengin } from "react-icons/fa";
-import { GetServerSidePropsContext } from "next";
+
 import { useRouter } from "next/router";
-import { supabase } from "~/lib/supabaseClient";
-import { taskForDisplay, tasksForHome } from "~/types/AllTypes";
+import type { tasksForHome } from "~/types/AllTypes";
 import { CreateNewMonsterButtonComponent } from "~/components/ui/Button/Button";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
@@ -34,15 +25,12 @@ export default function HomeList({ tasks }: tasksForHome) {
   const router = useRouter();
   const { data: session, status } = useSession(); // status を取得
   const [isLoaded, setIsLoaded] = useState(false); // 新しい state を追加
-  const [cookies, setCookie, removeCookie] = useCookies(["userInfo"]);
-  
-  console.log(cookies.userId, "これがクッキーなんだよねやっぱり")
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const clickHandler = async () => {
     await router.push("/createtodo");
   };
-  console.log(session, "sessionの値");
+  console.log(session, "session in HomeList");
 
   useEffect(() => {
     if (status === "loading") return; // セッションがまだロード中の場合は早期リターン
@@ -57,14 +45,14 @@ export default function HomeList({ tasks }: tasksForHome) {
       <>
         <Center>
           <VStack>
-          <Text>ロード中です</Text>
-          <Spinner
-            thickness="4px"
-            speed="0.65s"
-            emptyColor="gray.200"
-            color="blue.500"
-            size="xl"
-          />
+            <Text>ロード中です</Text>
+            <Spinner
+              thickness="4px"
+              speed="0.65s"
+              emptyColor="gray.200"
+              color="blue.500"
+              size="xl"
+            />
           </VStack>
         </Center>
       </>
@@ -72,7 +60,7 @@ export default function HomeList({ tasks }: tasksForHome) {
 
   return (
     <>
-      <NotificationReceiverComponent receiverUserId={cookies.userId} />
+      <NotificationReceiverComponent receiverUserId={session?.user.userId} />
       <Grid templateColumns={["1fr", null, "1fr 1fr"]} gap={1}>
         {tasks.map((task) => (
           <TodoCardComponent

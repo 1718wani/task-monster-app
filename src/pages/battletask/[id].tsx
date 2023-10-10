@@ -67,14 +67,6 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
     calculateNumberOfCheckedToPercentage();
   }, [items]);
 
-  // useEffect(() => {
-  //   if (progressValuePercentate === 0 && targetProgressValue === 0) {
-  //     setTimeout(() => {
-  //       onOpen();
-  //     }, 900);
-  //   }
-  // }, [targetProgressValue]);
-
   useEffect(() => {
     if (isTransition) {
       if (progressValuePercentate > targetProgressValue) {
