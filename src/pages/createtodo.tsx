@@ -6,11 +6,10 @@ import {
   Input,
   Button,
 } from "@chakra-ui/react";
-import { useCookies } from "react-cookie";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { Toaster, toast } from "react-hot-toast";
 import { RegisterationFailureNotification, RegisterationSuccessNotification } from "~/notifications/notifications";
+import { useSession } from "next-auth/react";
 
 type formInputs = {
   taskTitle: string;
@@ -19,7 +18,7 @@ type formInputs = {
 
 export const CreateTodo = () => {
   // emailを一意の値として獲得できる。
-  const [cookies, setCookie, removeCookie] = useCookies<string>(["userId"]);
+  const {data:session} = useSession();
   const router = useRouter();
 
   const {
@@ -34,7 +33,7 @@ export const CreateTodo = () => {
     try {
       const response = await axios.post("http://localhost:3000/api/task", {
         // APIエンドポイントに注意
-        userId: cookies.userId,
+        userId: session?.user.userId,
         title: data.taskTitle,
         detail: data.taskDetail,
         isCompleted: false,

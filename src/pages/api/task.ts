@@ -19,18 +19,20 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // // 認証情報のチェックはまた今度行います。
-  //   const session: unknown = await getServerSession(req, res, authOptions);
-  //   if (session) {
-  //     // Signed in
-  //     console.log("Session", JSON.stringify(session, null, 2));
-  //   } else {
-  //     // Not Signed in
-  //     res.status(401).json({ error: "Unauthorized" });
-  //     return;
-  //   }
+  // 認証情報のチェックはまた今度行います。
+    const session = await getServerSession(req, res, authOptions);
+    console.log("/taskがよびだされた際の session on server side", session);
+    if (session) {
+      // Signed in
+      console.log("Session on /task Server side", JSON.stringify(session, null, 2));
+    } else {
+      // Not Signed in
+      res.status(401).json({ error: "Unauthorized at /task API Routes" });
+      return;
+    }
 
-  const userId = req.query.userId as string | undefined;
+  const userId = session.user?.userId;
+  
   const getIsPublished = req.query.getIsPublished as
     | "true"
     | "false"
@@ -43,14 +45,13 @@ export default async function handler(
       case "GET":
         let whereClause = {};
 
-        // getIsPublishedがtrueの場合、isPublishedをtrueに設定
+        // getIsPublishedがtrueの場合、isPublishedがtrueのものを取得
         if (getIsPublished === "true"){
           whereClause = { ...whereClause, isPublished: true };
-          console.log("1番目")
-
+          console.log("getIsPublishedがtrueのため、isPublishedがtrueのものを取得")
         }
           
-        
+        // getIsOngoingがtrueの場合、isOnGoingがtrueかつuserIdが一致しないものを取得
         if (getIsOngoing === "true") {
           if (userId) {
             whereClause = {
@@ -58,7 +59,7 @@ export default async function handler(
               userId: { not: userId },
               isOnGoing: true,
             };
-            console.log("2番目")
+            console.log("getIsOngoingがtrueのため、isOnGoingがtrueかつuserIdが一致しないものを取得")
           } else {
             console.log("not authorized")
           }
@@ -66,7 +67,7 @@ export default async function handler(
 
         // クエリパラメータが設定されていない場合、userIdが一致するもののみ取得
         if (!getIsPublished && !getIsOngoing && userId){
-          console.log("4番目")
+          console.log("クエリパラメータが設定されていないため、userIdが一致するもののみ取得")
           whereClause = { ...whereClause, userId };
         }
           
@@ -81,8 +82,9 @@ export default async function handler(
           where: whereClause,
           orderBy: { id: "desc" },
         });
-        console.log(userId, "userIddesuyo")
-        console.log(tasks, "apiで呼び出しているtasks");
+
+        console.log(tasks, "/taskのGETメソッドによってサーバーサイドで呼び出したtasks");
+      
         res.status(200).json(tasks);
 
         break;

@@ -5,18 +5,7 @@ import {
   Heading,
   Progress,
   Stack,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverHeader,
-  PopoverBody,
-  PopoverFooter,
-  PopoverArrow,
-  PopoverCloseButton,
-  PopoverAnchor,
   Button,
-  Portal,
-  Box,
   Tooltip,
   MenuButton,
   Menu,
@@ -24,23 +13,17 @@ import {
   MenuList,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { GetServerSidePropsContext } from "next";
 import { useEffect, useState } from "react";
-import { useCookies } from "react-cookie";
-import { taskForDisplay, tasksForHome } from "~/types/AllTypes";
-import {
-  RegisterationFailureNotification,
-  SendReactionNotification,
-} from "~/notifications/notifications";
+import type { taskForDisplay } from "~/types/AllTypes";
+import { SendReactionNotification } from "~/notifications/notifications";
 import Pusher from "pusher-js";
-import { env } from "process";
+import { useSession } from "next-auth/react";
 
 export const OngoingBattleComponents = () => {
-  const [cookies, setCookie, removeCookie] = useCookies(["userId"]);
   const [tasks, setTasks] = useState<taskForDisplay[]>([]);
-  console.log(cookies, "これがクッキー");
-  const userId = cookies.userId as string;
-  console.log(userId, "これがuserId");
+  const { data: session } = useSession();
+  const userId = session?.user.userId;
+  console.log(userId, "userId in OngoingBattleComponent");
 
   useEffect(() => {
     // APIからデータを非同期でフェッチします。
@@ -57,6 +40,7 @@ export const OngoingBattleComponents = () => {
         );
 
         setTasks(response.data);
+        console.log(response.data, "OngoingBattleComponentのtasksを取得しました");
       } catch (error) {
         console.error("APIからデータの取得に失敗しました:", error);
       }
@@ -86,10 +70,10 @@ export const OngoingBattleComponents = () => {
     };
   }, []);
 
-  const sendComment = async (receiverUserId:string,reaction:string) => {
+  const sendComment = async (receiverUserId: string, reaction: string) => {
     try {
       const response = await axios.post("/api/trigger-notification", {
-        senderUserId: cookies.userId,
+        senderUserId: userId,
         receiverUserId: receiverUserId,
         reaction: reaction,
       });
@@ -138,10 +122,22 @@ export const OngoingBattleComponents = () => {
                 </HStack>
               </MenuButton>
             </Tooltip>
-            <MenuList >
-                <MenuItem onClick={async () => await sendComment(task.userId,"👏")}>ナイスファイト！👏</MenuItem>
-              <MenuItem onClick={async () => await sendComment(task.userId,"💪")}>わたしも頑張ります！💪</MenuItem>
-              <MenuItem onClick={async () => await sendComment(task.userId,"🤝")}>一緒にがんばりましょう🤝</MenuItem>
+            <MenuList>
+              <MenuItem
+                onClick={async () => await sendComment(task.userId, "👏")}
+              >
+                ナイスファイト！👏
+              </MenuItem>
+              <MenuItem
+                onClick={async () => await sendComment(task.userId, "💪")}
+              >
+                わたしも頑張ります！💪
+              </MenuItem>
+              <MenuItem
+                onClick={async () => await sendComment(task.userId, "🤝")}
+              >
+                一緒にがんばりましょう🤝
+              </MenuItem>
             </MenuList>
           </Menu>
         </>
