@@ -5,6 +5,7 @@ import type { taskForDisplay, tasksForHome } from "~/types/AllTypes";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
 import axios from "axios";
+import nookies from 'nookies'
 
 export default function Home(props: tasksForHome) {
   return (
@@ -20,7 +21,9 @@ export const getServerSideProps = async (
   let tasks: taskForDisplay[] = [];
   const session = await getServerSession(context.req, context.res, authOptions);
   const userId = session?.user.userId
-  console.log(userId,"これがtask全体呼び出しのuserId")
+  const token = nookies.get(context)["next-auth.session-token"]
+  console.log(token,"呼び出されたtoken")
+  console.log(userId,"task全体呼び出しのuserId")
 
   try {
     const response = await axios.get<taskForDisplay[]>(
@@ -29,6 +32,7 @@ export const getServerSideProps = async (
         params: {
           userId: userId,
         },
+        headers: { Cookie: `next-auth.session-token=${token}`},
         
       }
     );
