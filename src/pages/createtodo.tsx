@@ -8,24 +8,31 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useRouter } from "next/router";
-import { RegisterationFailureNotification, RegisterationSuccessNotification } from "~/notifications/notifications";
+import {
+  RegisterationFailureNotification,
+  RegisterationSuccessNotification,
+} from "~/notifications/notifications";
 import { useSession } from "next-auth/react";
+import { taskValidation } from "~/schemas/zodSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 type formInputs = {
   taskTitle: string;
-  taskDetail: string;
+  taskDetail: string | null;
 };
 
 export const CreateTodo = () => {
   // emailを一意の値として獲得できる。
-  const {data:session} = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<formInputs>();
+  } = useForm<formInputs>({
+    resolver: zodResolver(taskValidation),
+  });
 
   const onSubmit = async (data: formInputs) => {
     console.log(data);
@@ -41,34 +48,31 @@ export const CreateTodo = () => {
 
       console.log(response.data);
 
-      await router.push('/'); 
+      await router.push("/");
       RegisterationSuccessNotification();
-     
     } catch (error) {
       console.error("Error creating task:", error);
-      RegisterationFailureNotification()
+      RegisterationFailureNotification();
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <FormControl isInvalid={!errors.taskTitle}>
+      <FormControl isInvalid={!!errors.taskTitle}>
         <FormLabel htmlFor="tasktitle">タスクのタイトル</FormLabel>
         <Input
           id="tasktitle"
           placeholder="タスクのタイトル"
-          {...register("taskTitle", {
-            required: "This is required",
-          })}
+          {...register("taskTitle")}
         />
-        <FormErrorMessage>{errors.taskTitle?.toString()}</FormErrorMessage>
+        {errors.taskTitle && (
+          <FormErrorMessage>{errors.taskTitle.message}</FormErrorMessage>
+        )}
         <FormLabel htmlFor="taskdetail">タスクの詳細</FormLabel>
         <Input
           id="taskdetail"
           placeholder="タスクの詳細"
-          {...register("taskDetail", {
-            required: "This is required",
-          })}
+          {...register("taskDetail")}
         />
       </FormControl>
       <Button
@@ -80,7 +84,6 @@ export const CreateTodo = () => {
       >
         送信する
       </Button>
-     
     </form>
   );
 };

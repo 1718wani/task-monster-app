@@ -42,7 +42,6 @@ export const getServerSideProps = async (
   } catch (error) {
     console.error("APIの呼び出しに失敗:", error);
   }
-
   return {
     props: {
       tasks,

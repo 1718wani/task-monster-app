@@ -1,16 +1,18 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "~/server/db";
 
-type subTaskFormData = {
-  taskId: number;
-  title: string;
-  isCompleted: boolean;
-  estimatedMinutes: number;
-};
+interface ExtendedNextApiRequestAtSubtask extends NextApiRequest{
+  body:{
+    taskId: number;
+    title: string;
+    isCompleted: boolean;
+    estimatedMinutes: number;
+  }
+}
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<subTaskFormData>
+  req: ExtendedNextApiRequestAtSubtask,
+  res: NextApiResponse
 ) {
   const { taskId, title, isCompleted, estimatedMinutes } = req.body;
   const { forGetTaskId } = req.query;

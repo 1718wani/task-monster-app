@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import {
   Button,
   Flex,
@@ -27,7 +27,6 @@ import {
 import { useRouter } from "next/router";
 import { Controller, useForm } from "react-hook-form";
 import axios from "axios";
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { subTaskValidation } from "~/schemas/zodSchema";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
