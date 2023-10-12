@@ -132,6 +132,7 @@ export default async function handler(
         const newTask = await prisma.task.create({
           data: newTaskData,
         });
+        console.log(newTask, "サーバーサイドでCreateされたnewTask")
         res.status(201).json(newTask);
 
       default:

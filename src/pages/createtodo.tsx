@@ -22,14 +22,12 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import {
   RegisterationFailureNotification,
-  RegisterationSuccessNotification,
 } from "~/notifications/notifications";
 import { useSession } from "next-auth/react";
 import { taskValidation } from "~/schemas/zodSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { NextPage } from "next";
 import { useState } from "react";
-import { CustomTodoApiRequest, TodoFormData } from "~/types/AllTypes";
 
 type formInputs = {
   taskTitle: string;
@@ -52,7 +50,7 @@ export const CreateTodo: NextPage = () => {
   });
 
   const onSubmit = async (data: formInputs) => {
-    console.log(data);
+    console.log(data,"タスクフォーム送信時のデータ");
     onOpen();
 
     try {
