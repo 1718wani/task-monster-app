@@ -43,5 +43,6 @@ export const subTaskValidation = z.object({
 
 export const taskValidation = z.object({
   taskTitle: z.string().nonempty("タスクの名前は必須項目です。"),
+  taskDetail: z.string().optional(),
 })
 
