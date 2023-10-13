@@ -43,6 +43,7 @@ export const OngoingBattleComponents = () => {
         console.log(response.data, "OngoingBattleComponentのtasksを取得しました");
       } catch (error) {
         console.error("APIからデータの取得に失敗しました:", error);
+      
       }
     };
 
