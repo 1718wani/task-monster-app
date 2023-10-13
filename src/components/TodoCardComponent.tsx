@@ -63,7 +63,6 @@ export default function TodoCardComponent({
             px={3}
           >
             {detail}
-            {isCompleted}
           </Text>
           {isCompleted ? 
           <Badge fontSize='1.2em' colorScheme='green'>討伐Done！</Badge> :
