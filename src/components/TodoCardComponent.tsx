@@ -1,4 +1,6 @@
 import {
+  Badge,
+  Box,
   Button,
   Center,
   Flex,
@@ -18,10 +20,10 @@ export default function TodoCardComponent({
   isCompleted,
   imageData,
 }: TodoProps) {
-  const router = useRouter()
-  const clickHandler = async(q:string) =>{
-    await router.push(q)
-  }
+  const router = useRouter();
+  const clickHandler = async (q: string) => {
+    await router.push(q);
+  };
   return (
     <Center py={6}>
       <Stack
@@ -36,7 +38,12 @@ export default function TodoCardComponent({
         padding={4}
       >
         <Flex flex={1} bg="blue.200">
-          <Image objectFit="cover" boxSize="100%" src={imageData as string} alt="#" />
+          <Image
+            objectFit="cover"
+            boxSize="100%"
+            src={imageData as string}
+            alt="#"
+          />
         </Flex>
         <Stack
           flex={1}
@@ -58,6 +65,9 @@ export default function TodoCardComponent({
             {detail}
             {isCompleted}
           </Text>
+          {isCompleted ? 
+          <Badge fontSize='1.2em' colorScheme='green'>討伐Done！</Badge> :
+          <Badge fontSize='1.2em'>not yet！</Badge>}
 
           <Stack
             width={"100%"}
@@ -75,7 +85,6 @@ export default function TodoCardComponent({
                 bg: "gray.200",
               }}
               onClick={() => clickHandler(`/edittask/${id}`)}
-              
             >
               編集する
             </Button>
@@ -94,10 +103,13 @@ export default function TodoCardComponent({
               _focus={{
                 bg: "red.500",
               }}
-              onClick={() => clickHandler(`/createsubtask/${id}?title=${title}&imageurl=${imageData}`)}
+              onClick={() =>
+                clickHandler(
+                  `/createsubtask/${id}?title=${title}&imageurl=${imageData}`
+                )
+              }
             >
-                対戦する
-              
+              対戦する
             </Button>
           </Stack>
         </Stack>
