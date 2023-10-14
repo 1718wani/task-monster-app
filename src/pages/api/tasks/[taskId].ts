@@ -23,6 +23,9 @@ export default async function handler(
     return;
   }
 
+  console.log(task, "taskIdを指定してAPI Routesで呼び出したTask")
+  console.log("Received method:", req.method);
+
   try {
     switch (req.method) {
       case "GET":
@@ -53,6 +56,7 @@ async function handlePutRequest(
   res: NextApiResponse,
   taskId: number
 ) {
+  console.log("handlePutRequestがサーバーにて呼び出されました");
   let schema;
   if ("publishedTitle" in req.body && "publishedStrategy" in req.body) {
     schema = PublishUpdateSchema;
