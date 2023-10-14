@@ -38,7 +38,7 @@ export type TodoFormData = {
 
 
 export type taskForDisplay = {
-  id: string;
+  id: number;
   userId:string;
   title: string;
   detail:string|null;

@@ -25,10 +25,14 @@ export default function HomeList({ tasks }: tasksForHome) {
   const router = useRouter();
   const { data: session, status } = useSession(); // status を取得
   const [isLoaded, setIsLoaded] = useState(false); // 新しい state を追加
+  const [editableTaskId, setEditableTaskId] = useState<number|null>(null); // 編集可能なタスクのIDを保持する state を追加
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const clickHandler = async () => {
     await router.push("/createtodo");
+  };
+  const enterEditMode = (taskId:number|null) => {
+    setEditableTaskId(taskId);
   };
   console.log(session, "session in HomeList");
 
@@ -66,6 +70,7 @@ export default function HomeList({ tasks }: tasksForHome) {
           <TodoCardComponent
             key={task.id}
             id={task.id}
+            isEditable={task.id === editableTaskId}
             title={task.title}
             detail={task.detail}
             isCompleted={task.isCompleted}
@@ -73,6 +78,7 @@ export default function HomeList({ tasks }: tasksForHome) {
               task.imageData ??
               "https://images.unsplash.com/photo-1682685797365-41f45b562c0a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3270&q=80"
             } // 画像データがnullの場合、デフォルトのURLを使用
+            enterEditMode={enterEditMode}
           />
         ))}
       </Grid>
