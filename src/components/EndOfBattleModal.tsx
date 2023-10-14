@@ -20,7 +20,10 @@ import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Toaster } from "react-hot-toast";
-import { CompleteBattleSuccess, RegisterationSuccessNotification } from "~/notifications/notifications";
+import {
+  CompleteBattleSuccess,
+  RegisterationSuccessNotification,
+} from "~/notifications/notifications";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PublishUpdateSchema } from "~/schemas/zodSchema";
 
@@ -46,10 +49,10 @@ export const EndOfBattleModal = ({ isOpen, onClose }) => {
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault(); // フォームのデフォルトの送信動作を防ぐ
 
-    console.log(formData,"送ったデータ");
+    console.log(formData, "送ったデータ");
 
     setIsSubmitting(true);
-    
+
     try {
       const response = await axios.put(
         `http://localhost:3000/api/tasks/${id}`,
@@ -59,7 +62,7 @@ export const EndOfBattleModal = ({ isOpen, onClose }) => {
         }
       );
 
-      console.log(response.data, "これがレスポンス内容よ！");
+      console.log(response.data);
 
       await router.push("/");
       CompleteBattleSuccess();
@@ -80,15 +83,20 @@ export const EndOfBattleModal = ({ isOpen, onClose }) => {
 
   return (
     <>
-        <Modal closeOnOverlayClick={false} initialFocusRef={initialRef} isOpen={isOpen} onClose={onClose}>
-          <ModalOverlay />
+      <Modal
+        closeOnOverlayClick={false}
+        initialFocusRef={initialRef}
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ModalOverlay />
 
-          <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit}>
           <ModalContent>
             {/* (略) その他のコンテンツはそのまま */}
             <ModalBody pb={6}>
               {/* (略) テキストコンテンツはそのまま */}
-              
+
               <FormControl>
                 <FormLabel>公開するモンスターの名前</FormLabel>
                 <Input
@@ -127,10 +135,10 @@ export const EndOfBattleModal = ({ isOpen, onClose }) => {
               <Button onClick={onClose}>今回は公開しない</Button>
             </ModalFooter>
           </ModalContent>
-          </form>
-        </Modal>
+        </form>
+      </Modal>
 
-        <Toaster />
+      <Toaster />
     </>
   );
 };

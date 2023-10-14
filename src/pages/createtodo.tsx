@@ -29,7 +29,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { NextPage } from "next";
 import { useState } from "react";
 
-type formInputs = {
+export type formInputs = {
   taskTitle: string;
   taskDetail: string | null;
 };

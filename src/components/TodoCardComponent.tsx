@@ -11,9 +11,11 @@ import {
   Textarea,
   useColorModeValue,
 } from "@chakra-ui/react";
+import axios from "axios";
 
 import { useRouter } from "next/router";
 import { Controller, useForm } from "react-hook-form";
+import type { formInputs } from "~/pages/createtodo";
 
 interface TodoProps {
   id: number;
@@ -39,13 +41,26 @@ export default function TodoCardComponent({
   const { handleSubmit, control, setValue } = useForm({
     defaultValues: {
       taskTitle: title,
-      taskDetail: detail ??"",
+      taskDetail: detail ?? "",
     },
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // ここでデータをAPI等に送信
+
+
+  const onSubmit = async (data: formInputs) => {
+    console.log(data, "編集コンポーネントにおける送信データ");
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/tasks/${id}`,
+        {
+          title: data.taskTitle,
+          detail: data.taskDetail,
+        }
+      );
+      console.log(response.data, "これがタスク更新時のレスポンスデータ");
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
   };
 
   const clickHandler = async (q: string) => {
@@ -83,22 +98,38 @@ export default function TodoCardComponent({
               pt={2}
             >
               <form onSubmit={handleSubmit(onSubmit)}>
-              <Controller
-                name="taskTitle"
-                control={control}
-                render={({ field }) => (
-                  
-                  <Input {...field} size="lg"  fontWeight="bold"  variant="unstyled" fontFamily={"body"} fontSize={"2xl"} />
-                  
-                )}
-              />
-              <Controller
-                name="taskDetail"
-                control={control}
-                render={({ field }) => (
-                  <Textarea {...field} size="md" variant="unstyled" textAlign={"center"} color={useColorModeValue("gray.700", "gray.400")} px={3} />
-                )}
-              />
+                <Controller
+                  name="taskTitle"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      size="lg"
+                      fontWeight="bold"
+                      variant="unstyled"
+                      fontFamily={"body"}
+                      fontSize={"2xl"}
+                      bg={"gray.50"}
+                      autoFocus // これを追加
+                    />
+                  )}
+                />
+                <Controller
+                  name="taskDetail"
+                  control={control}
+                  render={({ field }) => (
+                    <Textarea
+                      {...field}
+                      size="md"
+                      variant="unstyled"
+                      textAlign={"center"}
+                      bg={"gray.50"}
+
+  
+                      px={3}
+                    />
+                  )}
+                />
               </form>
               {isCompleted ? (
                 <Badge fontSize="1.2em" colorScheme="green">
@@ -131,22 +162,12 @@ export default function TodoCardComponent({
                   flex={1}
                   fontSize={"sm"}
                   rounded={"full"}
-                  bg={"red.400"}
-                  color={"white"}
+                  colorScheme="teal"
                   boxShadow={
                     "0px 1px 25px -5px rgb(66 153 225 / 48%), 0 10px 10px -5px rgb(66 153 225 / 43%)"
                   }
-                  _hover={{
-                    bg: "red.500",
-                  }}
-                  _focus={{
-                    bg: "red.500",
-                  }}
-                  onClick={() =>
-                    clickHandler(
-                      `/createsubtask/${id}?title=${title}&imageurl=${imageData}`
-                    )
-                  }
+                  type="submit"
+                  onClick={() => enterEditMode(null)}
                 >
                   保存する
                 </Button>
