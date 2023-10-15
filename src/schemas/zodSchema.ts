@@ -11,6 +11,10 @@ export const ContentUpdateSchema = z.object({
   detail: z.string().optional(),
 });
 
+export const TotalTimeUpdateSchema = z.object({
+  totalMinutes:z.number()
+});
+
 
 
 // 数値が自然数かどうかをチェックするカスタムバリデーション

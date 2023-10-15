@@ -1,13 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "~/server/db";
 
-interface ExtendedNextApiRequestAtSubtask extends NextApiRequest{
-  body:{
+interface ExtendedNextApiRequestAtSubtask extends NextApiRequest {
+  body: {
     taskId: number;
     title: string;
     isCompleted: boolean;
     estimatedMinutes: number;
-  }
+  };
 }
 
 export default async function handler(
@@ -15,7 +15,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const { taskId, title, isCompleted, estimatedMinutes } = req.body;
-  const { forGetTaskId } = req.query;
+  const { forGetTaskId, subTaskId } = req.query;
 
   const { method } = req;
   switch (method) {
@@ -45,6 +45,18 @@ export default async function handler(
         },
       });
       res.status(200).json(subtask);
+      break;
+    case "PUT":
+      if (subTaskId) {
+        console.log(subTaskId, "subTaskIdの値")
+        const updatedSubTask = await prisma.subTask.update({
+          where: { id: Number(subTaskId) },
+          data: { isCompleted: isCompleted },
+        });
+        res.status(200).json(updatedSubTask);
+      } else {
+        res.status(400).json({ error: "SubTask ID is required for updating." });
+      }
       break;
     default:
       break;

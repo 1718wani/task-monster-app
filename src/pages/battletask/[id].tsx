@@ -1,16 +1,13 @@
-import { GetServerSidePropsContext, NextPage } from "next";
+import type { GetServerSidePropsContext, NextPage } from "next";
 import {
   Box,
   Button,
-  Flex,
-  HStack,
   Image,
   Progress,
   SimpleGrid,
   Stack,
   Text,
   VStack,
-  cookieStorageManager,
   useDisclosure,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
@@ -18,7 +15,7 @@ import { TimerOfTaskComponent } from "~/components/TimerOfTaskComponent";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { EndOfBattleModal } from "~/components/EndOfBattleModal";
-import { subTaskForDisplay } from "~/types/AllTypes";
+import type { subTaskForDisplay } from "~/types/AllTypes";
 import { useRouter } from "next/router";
 
 type Props = {
@@ -39,15 +36,31 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   const notify = () => toast("サブタスク完了によるこうげき", { icon: "👏" });
   const { isOpen, onOpen, onClose } = useDisclosure();
   console.log(imageurl, "現在の画像URL");
-  const router = useRouter(); 
+  const router = useRouter();
 
   // サブタスクの完了状態を変更する関数
-  const toggleItemDone = (id: number | string) => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, isCompleted: !item.isCompleted } : item
-      )
-    );
+  const toggleItemDone = async (id: number | string) => {
+    try {
+      // ここでAPIを呼び出します。例えば、PUTメソッドを使ってサブタスクの状態を更新するとします。
+      const response = await axios.put(
+        `http://localhost:3000/api/subtask/?subTaskId=${id}`,
+        {
+          isCompleted: !items.find((item) => item.id === id)?.isCompleted,
+        }
+      );
+
+      // レスポンスから更新されたサブタスクのデータを取得
+      const updatedSubtask = response.data;
+
+      // 状態を更新
+      setItems((prevItems) =>
+        prevItems.map((item) => (item.id === id ? updatedSubtask : item))
+      );
+
+      console.log(updatedSubtask, "更新されたサブタスク");
+    } catch (error) {
+      console.error("APIの呼び出しに失敗:", error);
+    }
   };
 
   console.log(subtasks, "現在のサブタスク");
@@ -105,7 +118,7 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
         100
     );
 
-    if (progressPercentage === 0 ) {
+    if (progressPercentage === 0) {
       setTimeout(() => {
         onOpen();
       }, 900);
@@ -150,8 +163,8 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
                   延長
                 </Button>
                 <Button
-                  onClick={() => {
-                    toggleItemDone(item.id);
+                  onClick={async () => {
+                    await toggleItemDone(item.id); // async/awaitを使っています
                     calculateNumberOfCheckedToPercentage();
                     notify();
                   }}
@@ -167,21 +180,21 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
           </Stack>
         ))}
         <Button
-        onClick={async() => {
-          await router.push("/");
-        }}
+          onClick={async () => {
+            await router.push("/");
+          }}
         >
           <Text>戦闘を中断する</Text>
         </Button>
       </Stack>
 
       <VStack spacing={6} w={"full"} maxW={"xl"} ml="100">
-       < Text fontSize={"lg"} as="b">
-         あと
+        <Text fontSize={"lg"} as="b">
+          あと
           <Text as="i" fontSize="4xl" display="inline" pr={2}>
             {progressValuePercentate}
           </Text>
-        ％です。
+          ％です。
         </Text>
         <Progress
           width="full"
