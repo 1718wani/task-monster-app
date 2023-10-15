@@ -45,8 +45,6 @@ export default function TodoCardComponent({
     },
   });
 
-
-
   const onSubmit = async (data: formInputs) => {
     console.log(data, "編集コンポーネントにおける送信データ");
     try {
@@ -124,8 +122,6 @@ export default function TodoCardComponent({
                       variant="unstyled"
                       textAlign={"center"}
                       bg={"gray.50"}
-
-  
                       px={3}
                     />
                   )}

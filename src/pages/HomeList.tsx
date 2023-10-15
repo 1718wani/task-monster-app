@@ -66,6 +66,11 @@ export default function HomeList({ tasks }: tasksForHome) {
     <>
       <NotificationReceiverComponent receiverUserId={session?.user.userId} />
       <Grid templateColumns={["1fr", null, "1fr 1fr"]} gap={1}>
+      {tasks.length === 0 && (
+        <Center>
+          これはあなたのタスクリストです。タスクを追加してみましょう！
+        </Center>
+      )}
         {tasks.map((task) => (
           <TodoCardComponent
             key={task.id}

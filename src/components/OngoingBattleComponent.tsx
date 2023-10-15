@@ -11,6 +11,9 @@ import {
   Menu,
   MenuItem,
   MenuList,
+  SkeletonCircle,
+  SkeletonText,
+  Skeleton,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -40,10 +43,12 @@ export const OngoingBattleComponents = () => {
         );
 
         setTasks(response.data);
-        console.log(response.data, "OngoingBattleComponentのtasksを取得しました");
+        console.log(
+          response.data,
+          "OngoingBattleComponentのtasksを取得しました"
+        );
       } catch (error) {
         console.error("APIからデータの取得に失敗しました:", error);
-      
       }
     };
 
@@ -91,7 +96,16 @@ export const OngoingBattleComponents = () => {
       <Heading size="md" px={4} pt={2} pb={1}>
         Ongoing Battle
       </Heading>
+      {tasks.length === 0 && (
+        <HStack pt={2} pb={1} px={4} >
+          <SkeletonCircle size="50px" />
 
+          <Stack width={"20"}>
+            <SkeletonText  noOfLines={1} spacing="4" />
+            <Skeleton height="4" />
+          </Stack>
+        </HStack>
+      )}
       {tasks.map((task) => (
         <>
           <Divider pt={2} />

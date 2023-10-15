@@ -19,15 +19,19 @@ export const authOptions: NextAuthOptions = {
       from: env.EMAIL_FROM,
     } as EmailClientType),
   ],
+  
   callbacks: {
     session({ session, user }: { session: Session; user: User }) {
       session.user.userId = user.id;
       session.user.image = user.image;
       return session;
     },
+    
     redirect({ baseUrl }) {
+      console.log("baseUrlが呼び出されました", baseUrl)
       return baseUrl;
-    }
+    },
+    
   },
 };
 export default NextAuth(authOptions);
