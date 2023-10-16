@@ -30,7 +30,6 @@ import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { subTaskValidation } from "~/schemas/zodSchema";
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
-import { useState } from "react";
 
 type TaskInput = {
   subtask: string;
@@ -43,7 +42,6 @@ type subTaskFormInputs = {
 
 export const Subtask: NextPage = () => {
   const router = useRouter();
-  const [totalTime, setTotalTime] = useState(0);
   const { id: idQuery, imageurl: imageurlQuery } = router.query;
   const id = Array.isArray(idQuery) ? idQuery[0] : idQuery;
   const imageurl = Array.isArray(imageurlQuery)
@@ -54,8 +52,6 @@ export const Subtask: NextPage = () => {
   const routerHandler = async (q: string) => {
     await router.push(q);
   };
-
-  console.log(totalTime, "合計時間")
 
   const {
     control,
@@ -90,9 +86,10 @@ export const Subtask: NextPage = () => {
     console.log(calculatedTotalTime, "送信時の合計時間はこちらです");
 
     try {
-      const response  = await axios.put(
+      const response = await axios.put(
         `http://localhost:3000/api/tasks/${id}`,
         {
+          isOnGoing: true, 
           totalMinutes: calculatedTotalTime,
         }
       );
@@ -125,10 +122,9 @@ export const Subtask: NextPage = () => {
       if (isValidMinof(task.minof)) {
         return sum + task.minof;
       }
-      
+
       return sum;
     }, 0);
-    
   };
 
   return (

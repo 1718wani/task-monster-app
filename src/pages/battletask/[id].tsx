@@ -26,16 +26,16 @@ type Props = {
 export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   // 現在のカラー
   const [colorStates, SetColorStatus] = useState("teal");
+  const [nowTime,SetNowTime] = useState<number>(0);
   // パーセンテージ
   const [progressValuePercentate, setProgressValuePercentate] = useState(100);
   const [items, setItems] = useState(subtasks);
 
   const [targetProgressValue, setTargetProgressValue] = useState(100);
   const [isTransition, setIsTransition] = useState(false);
-  console.log(items);
+
   const notify = () => toast("サブタスク完了によるこうげき", { icon: "👏" });
   const { isOpen, onOpen, onClose } = useDisclosure();
-  console.log(imageurl, "現在の画像URL");
   const router = useRouter();
 
   // サブタスクの完了状態を変更する関数
@@ -63,10 +63,25 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
     }
   };
 
-  console.log(subtasks, "現在のサブタスク");
-  console.log(items, "現在のアイテム");
-  console.log(progressValuePercentate, "現在のパーセンテージ");
-  console.log(targetProgressValue, "ターゲットのパーセンテージ");
+  const backToHome = async () => {
+    const id = router.query.id;  
+    
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/tasks/${id}`,
+        {
+          isOnGoing: false, 
+          remainingMinutes: Math.ceil((nowTime/60) * 10) / 10,
+        }
+      );
+      console.log(response.data, "これがタスク更新時のレスポンスデータ");
+      await router.push("/");
+    } catch (error) {
+      console.error("Error updating totalminutes of task:", error);
+    }
+    
+  }
+  console.log(nowTime,"これが現在の時間nowTime")
 
   // サブタスクの合計時間を計算する
   const total = items.reduce((acc, task) => acc + task.estimatedMinutes, 0);
@@ -135,12 +150,18 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
     setIsTransition(true);
   };
 
+  // この関数が子から呼ばれる
+  const handleTimeChange = (time: number) => {
+    SetNowTime(time)
+  };
+
   return (
     <SimpleGrid columns={2} spacingY="10px" py={20}>
       <Stack spacing={6} w={"full"} maxW={"xl"} ml="100">
         <TimerOfTaskComponent
           expiryTimestamp={testDate}
           amountSeconds={total * 60}
+          onTimeChange={handleTimeChange}
         />
         {items.map((item) => (
           <Stack
@@ -180,9 +201,7 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
           </Stack>
         ))}
         <Button
-          onClick={async () => {
-            await router.push("/");
-          }}
+          onClick={backToHome}
         >
           <Text>戦闘を中断する</Text>
         </Button>

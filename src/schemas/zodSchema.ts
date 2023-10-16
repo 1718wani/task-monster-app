@@ -12,8 +12,15 @@ export const ContentUpdateSchema = z.object({
 });
 
 export const TotalTimeUpdateSchema = z.object({
-  totalMinutes:z.number()
+  totalMinutes:z.number(),
+  isOnGoing: z.boolean(),
 });
+
+export const RemainingTimeUpdateSchema = z.object({
+  remainingMinutes: z.number(),
+  isOnGoing: z.boolean(),
+});
+
 
 
 

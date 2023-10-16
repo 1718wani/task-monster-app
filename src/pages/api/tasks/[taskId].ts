@@ -1,5 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { ContentUpdateSchema, PublishUpdateSchema, TotalTimeUpdateSchema } from "~/schemas/zodSchema";
+import {
+  ContentUpdateSchema,
+  PublishUpdateSchema,
+  RemainingTimeUpdateSchema,
+  TotalTimeUpdateSchema,
+} from "~/schemas/zodSchema";
 import { prisma } from "~/server/db";
 import { callApiHandleError } from "~/util/callApiHandleError";
 
@@ -23,7 +28,7 @@ export default async function handler(
     return;
   }
 
-  console.log(task, "taskIdを指定してAPI Routesで呼び出したTask")
+  console.log(task, "taskIdを指定してAPI Routesで呼び出したTask");
   console.log("Received method:", req.method);
 
   try {
@@ -60,15 +65,18 @@ async function handlePutRequest(
   let schema;
   if ("publishedTitle" in req.body && "publishedStrategy" in req.body) {
     schema = PublishUpdateSchema;
-    console.log("publishedTitleとpublishedStrategyが含まれていました")
+    console.log("publishedTitleとpublishedStrategyが含まれていました");
   } else if ("title" in req.body) {
     schema = ContentUpdateSchema;
-    console.log("titleが含まれていました")
-  } else if ("totalMinutes" in req.body) {
+    console.log("titleが含まれていました");
+  } else if ("totalMinutes" in req.body && "isOnGoing" in req.body) {
     schema = TotalTimeUpdateSchema;
-    console.log("totalTimeが含まれていました")
+    console.log("totalTimeとisOnGoingが含まれていました");
+  } else if ("remainingMinutes" in req.body ) {
+    schema = RemainingTimeUpdateSchema;
+    console.log("remainingMinutesが含まれていました");
   } else {
-    console.log("何も含まれていませんでした")
+    console.log("何も含まれていませんでした");
     res.status(400).json({ error: "Invalid Post" });
     return;
   }
