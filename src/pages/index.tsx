@@ -5,7 +5,8 @@ import type { taskForDisplay, tasksForHome } from "~/types/AllTypes";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]";
 import axios from "axios";
-import nookies from 'nookies'
+import nookies from "nookies";
+import { prisma } from "~/server/db";
 
 export default function Home(props: tasksForHome) {
   return (
@@ -20,32 +21,24 @@ export const getServerSideProps = async (
 ) => {
   let tasks: taskForDisplay[] = [];
   const session = await getServerSession(context.req, context.res, authOptions);
-  const userId = session?.user.userId
-  const token = nookies.get(context)["next-auth.session-token"]
-  console.log(token,"呼び出されたtoken")
-  console.log(userId,"task全体呼び出しのuserId")
+  const userId = session?.user.userId;
 
   try {
-    const response = await axios.get<taskForDisplay[]>(
-      "http://localhost:3000/api/task",
-      {
-        params: {
-          userId: userId,
-        },
-        headers: { Cookie: `next-auth.session-token=${token}`},
-        
-      }
-    );
-    tasks = response.data;
-    console.log(tasks,"これが全体を呼び出すときのGetserversideのtasks")
-   
+    tasks = await prisma.task.findMany({
+      where: {
+        userId: userId,
+      },
+      include: {
+        subTasks: true, // サブタスクも一緒に取得
+      },
+    });
   } catch (error) {
-    console.error("APIの呼び出しに失敗:", error);
+    console.error("データベースの呼び出しに失敗:", error);
   }
+
   return {
     props: {
       tasks,
     },
   };
 };
-

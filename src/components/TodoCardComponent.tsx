@@ -6,6 +6,7 @@ import {
   Heading,
   Image,
   Input,
+  Progress,
   Stack,
   Text,
   Textarea,
@@ -16,6 +17,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import { Controller, useForm } from "react-hook-form";
 import type { formInputs } from "~/pages/createtodo";
+import { subTaskForDisplay } from "~/types/AllTypes";
 
 interface TodoProps {
   id: number;
@@ -23,8 +25,11 @@ interface TodoProps {
   detail: string | null;
   isCompleted: boolean;
   imageData: string;
+  totalMinutes: number|null;
+  remainingMinutes: number|null;
   isEditable: boolean;
   enterEditMode: (id: number | null) => void; // 追加
+  subTasks: subTaskForDisplay[];
 }
 
 export default function TodoCardComponent({
@@ -35,6 +40,10 @@ export default function TodoCardComponent({
   imageData,
   isEditable,
   enterEditMode,
+  totalMinutes,
+  remainingMinutes,
+  subTasks,
+
 }: TodoProps) {
   const router = useRouter();
   // React Hook Formの初期化
@@ -44,6 +53,14 @@ export default function TodoCardComponent({
       taskDetail: detail ?? "",
     },
   });
+
+  const completedSubTasks = subTasks.filter((subTask) => subTask.isCompleted).length;
+  const totalSubTasks = subTasks.length;
+
+  console.log(totalMinutes,"totalMinutesの値")
+  console.log(remainingMinutes,"remainingMinutesの値")
+  console.log(totalSubTasks,"totalSubTasksの値")
+  console.log(completedSubTasks,"totalSubTasksの値")
 
 
 
@@ -195,7 +212,7 @@ export default function TodoCardComponent({
             <Image
               objectFit="cover"
               boxSize="100%"
-              src={imageData as string}
+              src={imageData}
               alt="#"
             />
           </Flex>
@@ -218,13 +235,21 @@ export default function TodoCardComponent({
             >
               {detail}
             </Text>
-            {isCompleted ? (
+            {isCompleted && (
               <Badge fontSize="1.2em" colorScheme="green">
                 討伐Done！
               </Badge>
-            ) : (
+            )} 
+            {(!isCompleted && totalMinutes === null ) && (
               <Badge fontSize="1.2em">not yet！</Badge>
             )}
+            {
+              (totalMinutes !== null && !isCompleted ) && (
+                <Badge fontSize="1.2em">on Progress</Badge>
+              )
+            }
+            <Progress width={"full"} h={4} value={(completedSubTasks / totalSubTasks) * 100} />
+            <Progress width={"full"} h={4} value={(remainingMinutes/ totalMinutes) * 100} />
 
             <Stack
               width={"100%"}
@@ -266,7 +291,7 @@ export default function TodoCardComponent({
                   )
                 }
               >
-                対戦する
+                討伐する
               </Button>
             </Stack>
           </Stack>

@@ -72,7 +72,7 @@ async function handlePutRequest(
   } else if ("totalMinutes" in req.body && "isOnGoing" in req.body) {
     schema = TotalTimeUpdateSchema;
     console.log("totalTimeとisOnGoingが含まれていました");
-  } else if ("remainingMinutes" in req.body ) {
+  } else if ("remainingMinutes" in req.body && "isOnGoing" in req.body ) {
     schema = RemainingTimeUpdateSchema;
     console.log("remainingMinutesが含まれていました");
   } else {
