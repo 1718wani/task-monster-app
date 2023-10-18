@@ -18,6 +18,7 @@ import type { taskForDisplay } from "~/types/AllTypes";
 import { SendReactionNotification } from "~/notifications/notifications";
 import Pusher from "pusher-js";
 import { useSession } from "next-auth/react";
+import CustomProgressBar from "./ui/ProgressBar/CustomeProgressBar";
 
 export const OngoingBattleComponents = () => {
   const [tasks, setTasks] = useState<taskForDisplay[]>([]);
@@ -40,10 +41,12 @@ export const OngoingBattleComponents = () => {
         );
 
         setTasks(response.data);
-        console.log(response.data, "OngoingBattleComponentのtasksを取得しました");
+        console.log(
+          response.data,
+          "OngoingBattleComponentのtasksを取得しました"
+        );
       } catch (error) {
         console.error("APIからデータの取得に失敗しました:", error);
-      
       }
     };
 
@@ -109,16 +112,8 @@ export const OngoingBattleComponents = () => {
 
                   <Stack width={"full"}>
                     <Heading size="xs">{task.title}</Heading>
-                    <Progress
-                      width={"full"}
-                      colorScheme={"teal"}
-                      size="sm"
-                      value={80}
-                      isAnimated
-                      hasStripe
-                      shadow="dark-lg"
-                      rounded="lg"
-                    />
+
+                    <CustomProgressBar w={"full"} size="sm" value={40} />
                   </Stack>
                 </HStack>
               </MenuButton>

@@ -22,6 +22,7 @@ export const getServerSideProps = async (
   let tasks: taskForDisplay[] = [];
   const session = await getServerSession(context.req, context.res, authOptions);
   const userId = session?.user.userId;
+  // クッキーをセットしたほうが良さそう
 
   try {
     tasks = await prisma.task.findMany({
