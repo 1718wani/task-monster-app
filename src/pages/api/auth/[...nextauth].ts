@@ -19,6 +19,13 @@ export const authOptions: NextAuthOptions = {
       from: env.EMAIL_FROM,
     } as EmailClientType),
   ],
+  session: {
+    strategy: 'jwt',
+  },
+  jwt: {
+    secret: process.env.NEXTAUTH_JWT_SECRET,
+  },
+  secret: process.env.NEXTAUTH_SECRET,
   
   callbacks: {
     session({ session, user }: { session: Session; user: User }) {
