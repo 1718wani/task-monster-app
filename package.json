@@ -41,6 +41,7 @@
     "react-sweetalert2": "^0.6.0",
     "react-timer-hook": "^3.0.7",
     "reshake": "^2.0.0",
+    "swr": "^2.2.4",
     "yup": "^1.2.0",
     "zod": "^3.22.2"
   },

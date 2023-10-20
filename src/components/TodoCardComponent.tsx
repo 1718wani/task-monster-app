@@ -101,7 +101,7 @@ export default function TodoCardComponent({
               <Image
                 objectFit="cover"
                 boxSize="100%"
-                src={imageData as string}
+                src={imageData}
                 alt="#"
               />
             </Flex>

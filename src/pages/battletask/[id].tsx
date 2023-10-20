@@ -26,7 +26,7 @@ type Props = {
 export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   // 現在のカラー
   const [colorStates, SetColorStatus] = useState("teal");
-  const [nowTime,SetNowTime] = useState<number>(0);
+  const [nowTime, SetNowTime] = useState<number>(0);
   // パーセンテージ
   const [progressValuePercentate, setProgressValuePercentate] = useState(100);
   const [items, setItems] = useState(subtasks);
@@ -37,6 +37,12 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   const notify = () => toast("サブタスク完了によるこうげき", { icon: "👏" });
   const { isOpen, onOpen, onClose } = useDisclosure();
   const router = useRouter();
+
+  //TODO nowTimeがカウントダウンされているので、もし０になったら、残念！残り時間を追加しますか？というモーダルを表示するようにする
+  //TODO しかし、すでに別のモーダルがonOpenによって状態を管理されているので並行した管理が必要となる。
+  if (nowTime === 0) {
+    return;
+  }
 
   // サブタスクの完了状態を変更する関数
   const toggleItemDone = async (id: number | string) => {
@@ -64,14 +70,14 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   };
 
   const backToHome = async () => {
-    const id = router.query.id;  
-    
+    const id = router.query.id;
+
     try {
       const response = await axios.put(
         `http://localhost:3000/api/tasks/${id}`,
         {
-          isOnGoing: false, 
-          remainingMinutes: Math.ceil((nowTime/60) * 10) / 10,
+          isOnGoing: false,
+          remainingMinutes: Math.ceil((nowTime / 60) * 10) / 10,
         }
       );
       console.log(response.data, "これがタスク更新時のレスポンスデータ");
@@ -79,9 +85,8 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
     } catch (error) {
       console.error("Error updating totalminutes of task:", error);
     }
-    
-  }
-  console.log(nowTime,"これが現在の時間nowTime")
+  };
+  console.log(nowTime, "これが現在の時間nowTime");
 
   // サブタスクの合計時間を計算する
   const total = items.reduce((acc, task) => acc + task.estimatedMinutes, 0);
@@ -134,6 +139,7 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
     );
 
     if (progressPercentage === 0) {
+      //TODO progressPrcentageが０になったタイミングで、TimerのOnPauseを使ってカウントダウンを停止する。
       setTimeout(() => {
         onOpen();
       }, 900);
@@ -152,7 +158,7 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
 
   // この関数が子から呼ばれる
   const handleTimeChange = (time: number) => {
-    SetNowTime(time)
+    SetNowTime(time);
   };
 
   return (
@@ -200,9 +206,7 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
             </Stack>
           </Stack>
         ))}
-        <Button
-          onClick={backToHome}
-        >
+        <Button onClick={backToHome}>
           <Text>戦闘を中断する</Text>
         </Button>
       </Stack>
