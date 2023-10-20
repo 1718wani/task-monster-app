@@ -44,6 +44,9 @@ export type taskForDisplay = {
   detail:string|null;
   isCompleted: boolean;
   imageData: string | null;
+  totalMinutes: number|null;
+  remainingMinutes: number|null;
+  subTasks: subTaskForDisplay[]; 
 };
 
 export type tasksForHome = {

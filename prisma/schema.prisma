@@ -73,7 +73,8 @@ model Task {
     isPublished Boolean  @default(false)
     publishedTitle String?
     publishedStrategy String?
-    totalMinutes Int? // 想定する工数（時間）
+    totalMinutes Int? // 想定する工数（分）
+    remainingMinutes Int? // 残りの工数（分）
 }
 
 model SubTask {

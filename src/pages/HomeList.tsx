@@ -78,7 +78,10 @@ export default function HomeList({ tasks }: tasksForHome) {
               task.imageData ??
               "https://images.unsplash.com/photo-1682685797365-41f45b562c0a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3270&q=80"
             } // 画像データがnullの場合、デフォルトのURLを使用
+            totalMinutes={task.totalMinutes}
+            remainingMinutes={task.remainingMinutes}
             enterEditMode={enterEditMode}
+            subTasks={task.subTasks}
           />
         ))}
       </Grid>

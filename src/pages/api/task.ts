@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth/[...nextauth]";
 import { prisma } from "~/server/db";
@@ -81,6 +81,9 @@ export default async function handler(
         const tasks = await prisma.task.findMany({
           where: whereClause,
           orderBy: { id: "desc" },
+          include: {
+            subTasks: true, 
+          },
         });
 
         console.log(tasks, "/taskのGETメソッドによってサーバーサイドで呼び出したtasks");

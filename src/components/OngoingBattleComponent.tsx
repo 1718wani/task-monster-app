@@ -11,46 +11,37 @@ import {
   Menu,
   MenuItem,
   MenuList,
+  Spinner,
 } from "@chakra-ui/react";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { useEffect, useState } from "react";
 import type { taskForDisplay } from "~/types/AllTypes";
 import { SendReactionNotification } from "~/notifications/notifications";
 import Pusher from "pusher-js";
 import { useSession } from "next-auth/react";
+import CustomProgressBar from "./ui/ProgressBar/CustomeProgressBar";
+import useSWR from "swr";
+
+const urlWithUserId = (userId: string | undefined) => {
+  return `http://localhost:3000/api/task?getIsOngoing=true&userId=${userId}`;
+};
+
+const fetcher = async (input: RequestInfo, init?: RequestInit) => {
+  const res = await fetch(input, init);
+  return res.json();
+};
 
 export const OngoingBattleComponents = () => {
-  const [tasks, setTasks] = useState<taskForDisplay[]>([]);
   const { data: session } = useSession();
   const userId = session?.user.userId;
   console.log(userId, "userId in OngoingBattleComponent");
 
-  useEffect(() => {
-    // APIからデータを非同期でフェッチします。
-    const fetchData = async () => {
-      try {
-        const response = await axios.get<taskForDisplay[]>(
-          "http://localhost:3000/api/task",
-          {
-            params: {
-              getIsOngoing: "true",
-              userId: userId,
-            },
-          }
-        );
-
-        setTasks(response.data);
-        console.log(response.data, "OngoingBattleComponentのtasksを取得しました");
-      } catch (error) {
-        console.error("APIからデータの取得に失敗しました:", error);
-      
-      }
-    };
-
-    void fetchData().catch((error) => {
-      console.error("APIからデータの取得に失敗しました:", error);
-    });
-  }, []);
+  const {
+    data: tasks,
+    error,
+    isLoading,
+  } = useSWR<taskForDisplay[], Error>(() => urlWithUserId(userId), fetcher);
+  console.log(tasks, "サイドバーのTasks");
 
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_PUSHER_APP_KEY;
@@ -86,13 +77,17 @@ export const OngoingBattleComponents = () => {
     SendReactionNotification(receiverUserId, reaction);
   };
 
+  if (error)
+    return <div>APIからデータの取得に失敗しました: {error.message}</div>;
+  if (isLoading) return <Spinner />;
+
   return (
     <>
       <Heading size="md" px={4} pt={2} pb={1}>
         Ongoing Battle
       </Heading>
 
-      {tasks.map((task) => (
+      {tasks?.map((task) => (
         <>
           <Divider pt={2} />
 
@@ -109,15 +104,14 @@ export const OngoingBattleComponents = () => {
 
                   <Stack width={"full"}>
                     <Heading size="xs">{task.title}</Heading>
-                    <Progress
-                      width={"full"}
-                      colorScheme={"teal"}
+
+                    <CustomProgressBar
+                      w={"full"}
                       size="sm"
-                      value={80}
-                      isAnimated
-                      hasStripe
-                      shadow="dark-lg"
-                      rounded="lg"
+                      value={
+                        task.subTasks.filter((subTask) => subTask.isCompleted)
+                          .length / task.subTasks.length
+                      }
                     />
                   </Stack>
                 </HStack>

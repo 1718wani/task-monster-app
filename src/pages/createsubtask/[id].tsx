@@ -82,6 +82,22 @@ export const Subtask: NextPage = () => {
       }
     }
 
+    const calculatedTotalTime = calculateTotalMinof();
+    console.log(calculatedTotalTime, "送信時の合計時間はこちらです");
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/tasks/${id}`,
+        {
+          isOnGoing: true, 
+          totalMinutes: calculatedTotalTime,
+        }
+      );
+      console.log(response.data, "これがタスク更新時のレスポンスデータ");
+    } catch (error) {
+      console.error("Error updating totalminutes of task:", error);
+    }
+
     await routerHandler(`/battletask/${id}?imageurl=${imageurl}`);
   };
 
@@ -106,6 +122,7 @@ export const Subtask: NextPage = () => {
       if (isValidMinof(task.minof)) {
         return sum + task.minof;
       }
+
       return sum;
     }, 0);
   };

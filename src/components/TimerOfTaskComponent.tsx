@@ -5,11 +5,12 @@ import { useTimer } from "react-timer-hook";
 export const TimerOfTaskComponent = ({
   expiryTimestamp,
   amountSeconds,
- 
+  onTimeChange,
 }: {
   expiryTimestamp: Date;
   amountSeconds: number;
   onPause?:()=> void;
+
 }) => {
   const {
     totalSeconds,
@@ -28,12 +29,15 @@ export const TimerOfTaskComponent = ({
     
   });
 
+  // この行で親にtotalSecondsを送る
+  if (onTimeChange) onTimeChange(totalSeconds);
+
   const [colorStates, SetColorStatus] = useState("teal");
   const [progressValuePercentate, setProgressValuePercentate] = useState(100);
 
   console.log(totalSeconds,"秒数")//716から下にカウントダウンする
   console.log(expiryTimestamp,"タイムスタンプ")//Mon Sep 25 2023 08:13:34 GMT+0900
-  console.log(amountSeconds,"合計秒数")
+  
 
   useEffect(() => {
 
