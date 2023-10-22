@@ -100,14 +100,13 @@ export const CreateTodo: NextPage = () => {
           送信する
         </Button>
       </form>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose}  closeOnOverlayClick={false}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
             {isSubmitting && <Box>現在モンスターを作成しています</Box>}
             {isSubmitSuccessful && <Box>モンスターの作成が成功しました！</Box>}
           </ModalHeader>
-          <ModalCloseButton />
           <ModalBody>
             {isSubmitting && <Progress size="md" isIndeterminate />}
             {isSubmitting && <Skeleton rounded={20} boxSize="300px" />}
