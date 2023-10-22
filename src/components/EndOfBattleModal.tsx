@@ -93,9 +93,13 @@ export const EndOfBattleModal = ({ isOpen, onClose }) => {
 
         <form onSubmit={onSubmit}>
           <ModalContent>
-            {/* (略) その他のコンテンツはそのまま */}
+          <ModalHeader>討伐完了です！おめでとうございます！</ModalHeader>
             <ModalBody pb={6}>
-              {/* (略) テキストコンテンツはそのまま */}
+             <Text fontSize={"sm"} mb={4}>
+                この討伐を公開することで、他のユーザーがこの討伐を参考にできるようになります。
+                ※ この討伐を公開しても元のタスクのタイトルは公開されません。
+
+             </Text>
 
               <FormControl>
                 <FormLabel>公開するモンスターの名前</FormLabel>

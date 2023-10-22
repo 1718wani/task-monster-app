@@ -1,88 +1,53 @@
-import { Box, Button, Heading, Progress, Text, VStack } from "@chakra-ui/react";
+import { Text, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useTimer } from "react-timer-hook";
+import CustomProgressBar from "./ui/ProgressBar/CustomeProgressBar";
 
 export const TimerOfTaskComponent = ({
   expiryTimestamp,
+  // ここで親から設定した時間を秒で受け取る
   amountSeconds,
-  onTimeChange,
+  onTimeUpOpen,
 }: {
-  expiryTimestamp: Date;
+  expiryTimestamp: Date; //Mon Sep 25 2023 08:13:34 GMT+0900
   amountSeconds: number;
-  onPause?:()=> void;
-
+  onTimeUpOpen: () => void;
 }) => {
   const {
-    totalSeconds,
+    totalSeconds, //設定された数字から1秒毎にカウントダウンされる。
     seconds,
     minutes,
     hours,
-    days,
-    isRunning,
-    start,
     pause,
-    resume,
-    restart,
   } = useTimer({
     expiryTimestamp,
-    onExpire: () => console.warn("onExpire called"),
-    
+    onExpire: () => onTimeUpOpen(),
   });
-
-  // この行で親にtotalSecondsを送る
-  if (onTimeChange) onTimeChange(totalSeconds);
-
-  const [colorStates, SetColorStatus] = useState("teal");
   const [progressValuePercentate, setProgressValuePercentate] = useState(100);
 
-  console.log(totalSeconds,"秒数")//716から下にカウントダウンする
-  console.log(expiryTimestamp,"タイムスタンプ")//Mon Sep 25 2023 08:13:34 GMT+0900
-  
-
+  // TODO useEffectで監視する以外の方法で書き直したい
   useEffect(() => {
-
-    const percentage = (totalSeconds / amountSeconds) * 100;
-    setProgressValuePercentate(percentage);
-
-    if (percentage <= 20) {
-      SetColorStatus("red");
-    } else if (percentage > 60) {
-      SetColorStatus("teal");
-    } else {
-      SetColorStatus("yellow");
-    }
-
-    console.log(totalSeconds, "これが継承後");
-    console.log(progressValuePercentate, "今のProgress");
-  }, [totalSeconds]);
-
-  
+    // 残り秒数(totalSeconds) / 設定した秒数(amountSeconds) * 100
+    setProgressValuePercentate((totalSeconds / amountSeconds) * 100);
+  }, [totalSeconds, amountSeconds, progressValuePercentate]);
 
   return (
     <>
       <VStack>
-      <Text  mb={4}  fontSize={"lg"} as="b">
+        <Text mb={4} fontSize={"lg"} as="b">
           あと
           <Text pl={1} as="i" fontSize="4xl" display="inline" pr={2}>
-          {hours}時間:{minutes}分:{seconds}秒
+            {hours}時間:{minutes}分:{seconds}秒
           </Text>
-        です
+          です
         </Text>
-      
-        <Progress
+
+        <CustomProgressBar
           width={"full"}
-          colorScheme={colorStates}
           size="lg"
-          value={progressValuePercentate}
-          isAnimated
-          hasStripe
           height="25px"
-          shadow="dark-lg"
-          rounded="lg"
+          value={progressValuePercentate}
         />
-        {/* <Box>{isRunning ? "カウント中" : "停止中"}</Box>
-        <Button onClick={pause}>一時停止</Button>
-        <Button onClick={resume}>途中から再開</Button> */}
       </VStack>
     </>
   );

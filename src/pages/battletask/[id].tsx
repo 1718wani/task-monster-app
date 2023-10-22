@@ -17,6 +17,8 @@ import { Toaster, toast } from "react-hot-toast";
 import { EndOfBattleModal } from "~/components/EndOfBattleModal";
 import type { subTaskForDisplay } from "~/types/AllTypes";
 import { useRouter } from "next/router";
+import { TimeUpModal } from "~/components/TimeUpModal";
+import CustomProgressBar from "~/components/ui/ProgressBar/CustomeProgressBar";
 
 type Props = {
   subtasks: subTaskForDisplay[];
@@ -27,6 +29,7 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   // 現在のカラー
   const [colorStates, SetColorStatus] = useState("teal");
   const [nowTime, SetNowTime] = useState<number>(0);
+  const [isCountStop, setIsCountStop] = useState<boolean>(false);
   // パーセンテージ
   const [progressValuePercentate, setProgressValuePercentate] = useState(100);
   const [items, setItems] = useState(subtasks);
@@ -36,13 +39,13 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
 
   const notify = () => toast("サブタスク完了によるこうげき", { icon: "👏" });
   const { isOpen, onOpen, onClose } = useDisclosure();
+  // タイマー終了時のモーダル開閉の状態管理
+  const {
+    isOpen: isTimeUpOpen,
+    onOpen: onTimeUpOpen,
+    onClose: onTimeUpClose,
+  } = useDisclosure();
   const router = useRouter();
-
-  //TODO nowTimeがカウントダウンされているので、もし０になったら、残念！残り時間を追加しますか？というモーダルを表示するようにする
-  //TODO しかし、すでに別のモーダルがonOpenによって状態を管理されているので並行した管理が必要となる。
-  if (nowTime === 0) {
-    return;
-  }
 
   // サブタスクの完了状態を変更する関数
   const toggleItemDone = async (id: number | string) => {
@@ -88,12 +91,13 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   };
   console.log(nowTime, "これが現在の時間nowTime");
 
-  // サブタスクの合計時間を計算する
+  // サブタスクの合計時間を、subtaskのestimatedMinutesを合計して計算する
   const total = items.reduce((acc, task) => acc + task.estimatedMinutes, 0);
   console.log(total, "合計時間");
-
-  const testDate = new Date();
-  testDate.setSeconds(testDate.getSeconds() + total * 60); // 10 minutes timer
+  
+  // サブタスクの 
+  const currentTimeStamp = new Date();
+  currentTimeStamp.setSeconds(currentTimeStamp.getSeconds() + total * 60);
 
   // サブタスクの完了状態が変更されたら、パーセンテージを再計算する
   useEffect(() => {
@@ -120,7 +124,7 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   }, [targetProgressValue, isTransition]);
 
   const calculateNumberOfCheckedToPercentage = () => {
-    // タスクの合計時間
+    // タスクの合計時間を計算する関数
     const totalEstimatedMinutes = items.reduce(
       (acc, item) => acc + item.estimatedMinutes,
       0
@@ -139,36 +143,28 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
     );
 
     if (progressPercentage === 0) {
-      //TODO progressPrcentageが０になったタイミングで、TimerのOnPauseを使ってカウントダウンを停止する。
+      setIsCountStop(true);
       setTimeout(() => {
         onOpen();
       }, 900);
-    } else if (progressPercentage <= 20) {
-      SetColorStatus("red");
-    } else if (progressPercentage > 60) {
-      SetColorStatus("teal");
-    } else {
-      SetColorStatus("yellow");
-    }
+    } 
 
     // パーセンテージをsetState関数でセット
     setTargetProgressValue(progressPercentage);
     setIsTransition(true);
   };
 
-  // この関数が子から呼ばれる
-  const handleTimeChange = (time: number) => {
-    SetNowTime(time);
-  };
-
   return (
     <SimpleGrid columns={2} spacingY="10px" py={20}>
       <Stack spacing={6} w={"full"} maxW={"xl"} ml="100">
-        <TimerOfTaskComponent
-          expiryTimestamp={testDate}
-          amountSeconds={total * 60}
-          onTimeChange={handleTimeChange}
-        />
+        {!isCountStop && (
+          <TimerOfTaskComponent
+            expiryTimestamp={currentTimeStamp}
+            amountSeconds={total * 60}
+            onTimeUpOpen={onTimeUpOpen}
+          />
+        )}
+
         {items.map((item) => (
           <Stack
             key={item.id}
@@ -219,17 +215,13 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
           </Text>
           ％です。
         </Text>
-        <Progress
-          width="full"
-          colorScheme={colorStates}
-          size="lg"
+        <CustomProgressBar
           value={progressValuePercentate}
-          isAnimated
-          hasStripe
+          width="full"
+          size="lg"
           height="25px"
-          shadow="dark-lg"
-          rounded="lg"
         />
+
         <Image
           mt={20}
           rounded={20}
@@ -239,6 +231,11 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
           shadow={"xl"}
         />
         <EndOfBattleModal isOpen={isOpen} onClose={onClose} />
+        <TimeUpModal
+          isOpen={isTimeUpOpen}
+          onClose={onTimeUpClose}
+          id={router.query.id}
+        />
       </VStack>
     </SimpleGrid>
   );
