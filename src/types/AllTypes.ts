@@ -60,3 +60,5 @@ export type subTaskForDisplay = {
   isCompleted: boolean;
   estimatedMinutes: number;
 };
+
+export type ProgressStatus = 'neutral' | 'isCountingUp' | 'isCountingDown';
