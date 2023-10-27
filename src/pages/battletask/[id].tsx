@@ -15,7 +15,11 @@ import { TimerOfTaskComponent } from "~/components/TimerOfTaskComponent";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { EndOfBattleModal } from "~/components/EndOfBattleModal";
-import type { ProgressStatus, subTaskForDisplay, taskForDisplay } from "~/types/AllTypes";
+import type {
+  ProgressStatus,
+  subTaskForDisplay,
+  taskForDisplay,
+} from "~/types/AllTypes";
 import { useRouter } from "next/router";
 import { TimeUpModal } from "~/components/TimeUpModal";
 import CustomProgressBar from "~/components/ui/ProgressBar/CustomeProgressBar";
@@ -23,6 +27,8 @@ import { useInterval } from "usehooks-ts";
 import { prisma } from "~/server/db";
 import { Prisma } from "@prisma/client";
 import { useTimer } from "react-timer-hook";
+import { UseProgressManager } from "~/hooks/useProgressManager";
+import { calculateSubtaskPercentage } from "~/util/calculateSubtaskPercentage";
 
 type forBattleProps = {
   initialTask: taskForDisplay;
@@ -36,72 +42,28 @@ export const BattleTask: NextPage<forBattleProps> = ({
   const [subtasks, setSubtasks] = useState<subTaskForDisplay[]>(
     initialTask.subTasks
   );
-  const [progressStatus, setProgressStatus] = useState<ProgressStatus>('neutral');
-
-  // subtasksの状態から、isCompletedになっている割合をProgressのValueとして保持する。(小数点切り捨て)
-  const [progressValue, setProgressValue] = useState<number>(
-    Math.floor(
-      (1 -
-        subtasks
-          .filter((t) => t.isCompleted)
-          .reduce((a, c) => a + c.estimatedMinutes, 0) /
-          subtasks.reduce((a, c) => a + c.estimatedMinutes, 0)) *
-        1000
-    ) / 10
-  );
 
   // remainingMinutesが定義されたらそちらを採用、そうでなければ減った時間のそちらを採用
   const remainingTotalSeconds = initialTask.remainingMinutes
     ? initialTask.remainingMinutes * 60
     : initialTask.totalMinutes * 60;
 
-  // useTimerを親で使用
+  // useTimerを初期化
   const { totalSeconds, seconds, minutes, hours, pause } = useTimer({
     expiryTimestamp: new Date(
       new Date().getTime() + remainingTotalSeconds * 1000
     ),
     onExpire: () => onTimeUpOpen(),
   });
-  // 更新した結果表示してほしい値をuseStateで管理する
-  const targetProgressValue =
-    Math.floor(
-      (1 -
-        subtasks
-          .filter((t) => t.isCompleted)
-          .reduce((a, c) => a + c.estimatedMinutes, 0) /
-          subtasks.reduce((a, c) => a + c.estimatedMinutes, 0)) *
-        1000
-    ) / 10;
 
-    useInterval(
-      () => {
-        if (progressStatus === "isCountingDown") {
-          if (progressValue === 0) {
-            pause();
-            onOpen();
-          }
-          if (progressValue > targetProgressValue) {
-            setProgressValue((prev) => prev - 1);
-          } else {
-            setProgressStatus("neutral");
-          }
-        } else if (progressStatus === "isCountingUp") {
-          if (progressValue < targetProgressValue) {
-            setProgressValue((prev) => prev + 1);
-          } else {
-            setProgressStatus("neutral");
-          }
-        }
-      },
-      progressStatus !== "neutral" ? 30 : null // 1秒ごとに実行
-    );
-
-  // subtasksのうち、isCompletedになっていないタスクのかかる工数を合計した分数
-  // const totalMinutesOfNotCompletedSubtasks = subtasks.reduce(
-  //   (acc, subtask) =>
-  //     subtask.isCompleted ? acc : acc + (subtask.estimatedMinutes || 0),
-  //   0
-  // );
+  const { progressValue, setProgressStatus } = UseProgressManager({
+    initialProgressValue: calculateSubtaskPercentage(subtasks),
+    targetProgressValue: calculateSubtaskPercentage(subtasks),
+    onReachZero: () => {
+      pause();
+      onOpen();
+    },
+  });
 
   const notify = () => toast("サブタスク完了によるこうげき", { icon: "👏" });
   // タスクを全部コンプリートした時のモーダル開閉の状態管理
