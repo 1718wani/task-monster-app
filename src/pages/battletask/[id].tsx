@@ -15,29 +15,58 @@ import { TimerOfTaskComponent } from "~/components/TimerOfTaskComponent";
 import axios from "axios";
 import { Toaster, toast } from "react-hot-toast";
 import { EndOfBattleModal } from "~/components/EndOfBattleModal";
-import type { subTaskForDisplay } from "~/types/AllTypes";
+import type {
+  ProgressStatus,
+  subTaskForDisplay,
+  taskForDisplay,
+} from "~/types/AllTypes";
 import { useRouter } from "next/router";
 import { TimeUpModal } from "~/components/TimeUpModal";
 import CustomProgressBar from "~/components/ui/ProgressBar/CustomeProgressBar";
+import { useInterval } from "usehooks-ts";
+import { prisma } from "~/server/db";
+import { Prisma } from "@prisma/client";
+import { useTimer } from "react-timer-hook";
+import { UseProgressManager } from "~/hooks/useProgressManager";
+import { calculateSubtaskPercentage } from "~/util/calculateSubtaskPercentage";
 
-type Props = {
-  subtasks: subTaskForDisplay[];
+type forBattleProps = {
+  initialTask: taskForDisplay;
   imageurl: string | undefined;
 };
 
-export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
-  // 現在のカラー
-  const [colorStates, SetColorStatus] = useState("teal");
-  const [nowTime, SetNowTime] = useState<number>(0);
-  const [isCountStop, setIsCountStop] = useState<boolean>(false);
-  // パーセンテージ
-  const [progressValuePercentate, setProgressValuePercentate] = useState(100);
-  const [items, setItems] = useState(subtasks);
+export const BattleTask: NextPage<forBattleProps> = ({
+  initialTask,
+  imageurl,
+}) => {
+  const [subtasks, setSubtasks] = useState<subTaskForDisplay[]>(
+    initialTask.subTasks
+  );
 
-  const [targetProgressValue, setTargetProgressValue] = useState(100);
-  const [isTransition, setIsTransition] = useState(false);
+  // remainingMinutesが定義されたらそちらを採用、そうでなければ減った時間のそちらを採用
+  const remainingTotalSeconds = initialTask.remainingMinutes
+    ? initialTask.remainingMinutes * 60
+    : initialTask.totalMinutes * 60;
+
+  // useTimerを初期化
+  const { totalSeconds, seconds, minutes, hours, pause } = useTimer({
+    expiryTimestamp: new Date(
+      new Date().getTime() + remainingTotalSeconds * 1000
+    ),
+    onExpire: () => onTimeUpOpen(),
+  });
+
+  const { progressValue, setProgressStatus } = UseProgressManager({
+    initialProgressValue: calculateSubtaskPercentage(subtasks),
+    targetProgressValue: calculateSubtaskPercentage(subtasks),
+    onReachZero: () => {
+      pause();
+      onOpen();
+    },
+  });
 
   const notify = () => toast("サブタスク完了によるこうげき", { icon: "👏" });
+  // タスクを全部コンプリートした時のモーダル開閉の状態管理
   const { isOpen, onOpen, onClose } = useDisclosure();
   // タイマー終了時のモーダル開閉の状態管理
   const {
@@ -50,21 +79,28 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
   // サブタスクの完了状態を変更する関数
   const toggleItemDone = async (id: number | string) => {
     try {
-      // ここでAPIを呼び出します。例えば、PUTメソッドを使ってサブタスクの状態を更新するとします。
+      // ここでAPIを呼び出します。例えば、PUTメソッドを使ってあるidのサブタスクの状態を更新する。
       const response = await axios.put(
         `http://localhost:3000/api/subtask/?subTaskId=${id}`,
         {
-          isCompleted: !items.find((item) => item.id === id)?.isCompleted,
+          // isCompletedのBoolean値が変更されます。
+          isCompleted: !subtasks.find((subtask) => subtask.id === id)
+            ?.isCompleted,
         }
       );
 
       // レスポンスから更新されたサブタスクのデータを取得
       const updatedSubtask = response.data;
 
-      // 状態を更新
-      setItems((prevItems) =>
-        prevItems.map((item) => (item.id === id ? updatedSubtask : item))
+      // 完了ボタンを押したsubtaskの値だけ、塗り替えてsubtasksを更新する
+      setSubtasks((prevSubtasks) =>
+        prevSubtasks.map((subtask) =>
+          subtask.id === id ? updatedSubtask : subtask
+        )
       );
+
+      // Counting Downを開始する。
+      setProgressStatus("isCountingDown");
 
       console.log(updatedSubtask, "更新されたサブタスク");
     } catch (error) {
@@ -80,7 +116,8 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
         `http://localhost:3000/api/tasks/${id}`,
         {
           isOnGoing: false,
-          remainingMinutes: Math.ceil((nowTime / 60) * 10) / 10,
+          // ここには、totalsecondsが入力されるべき
+          remainingMinutes: Math.ceil((remainingTotalSeconds / 60) * 10) / 10,
         }
       );
       console.log(response.data, "これがタスク更新時のレスポンスデータ");
@@ -89,97 +126,39 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
       console.error("Error updating totalminutes of task:", error);
     }
   };
-  console.log(nowTime, "これが現在の時間nowTime");
 
-  // サブタスクの合計時間を、subtaskのestimatedMinutesを合計して計算する
-  const total = items.reduce((acc, task) => acc + task.estimatedMinutes, 0);
-  console.log(total, "合計時間");
-  
-  // サブタスクの 
+  // 現在のタイムスタンプを表示するcurretnTimeStampを作成
   const currentTimeStamp = new Date();
-  currentTimeStamp.setSeconds(currentTimeStamp.getSeconds() + total * 60);
-
-  // サブタスクの完了状態が変更されたら、パーセンテージを再計算する
-  useEffect(() => {
-    calculateNumberOfCheckedToPercentage();
-  }, [items]);
-
-  useEffect(() => {
-    if (isTransition) {
-      if (progressValuePercentate > targetProgressValue) {
-        const intervalId = setInterval(() => {
-          setProgressValuePercentate((prev) => {
-            if (prev > targetProgressValue) {
-              return prev - 0.2;
-            } else {
-              clearInterval(intervalId);
-              return targetProgressValue;
-            }
-          });
-        }, 9);
-      } else {
-        setProgressValuePercentate(targetProgressValue);
-      }
-    }
-  }, [targetProgressValue, isTransition]);
-
-  const calculateNumberOfCheckedToPercentage = () => {
-    // タスクの合計時間を計算する関数
-    const totalEstimatedMinutes = items.reduce(
-      (acc, item) => acc + item.estimatedMinutes,
-      0
-    );
-
-    // 完了したタスクの合計時間
-    const completedEstimatedMinutes = items
-      .filter((item) => item.isCompleted)
-      .reduce((acc, item) => acc + item.estimatedMinutes, 0);
-
-    // 進捗のパーセンテージを計算して、小数点以下第一位で切り捨て
-    const progressPercentage = Math.floor(
-      ((totalEstimatedMinutes - completedEstimatedMinutes) /
-        totalEstimatedMinutes) *
-        100
-    );
-
-    if (progressPercentage === 0) {
-      setIsCountStop(true);
-      setTimeout(() => {
-        onOpen();
-      }, 900);
-    } 
-
-    // パーセンテージをsetState関数でセット
-    setTargetProgressValue(progressPercentage);
-    setIsTransition(true);
-  };
+  currentTimeStamp.setSeconds(
+    currentTimeStamp.getSeconds() + remainingTotalSeconds
+  );
 
   return (
     <SimpleGrid columns={2} spacingY="10px" py={20}>
       <Stack spacing={6} w={"full"} maxW={"xl"} ml="100">
-        {!isCountStop && (
-          <TimerOfTaskComponent
-            expiryTimestamp={currentTimeStamp}
-            amountSeconds={total * 60}
-            onTimeUpOpen={onTimeUpOpen}
-          />
-        )}
+        <TimerOfTaskComponent
+          initialAmountSeconds={60 * initialTask.totalMinutes}
+          totalSeconds={totalSeconds}
+          seconds={seconds}
+          minutes={minutes}
+          hours={hours}
+        />
 
-        {items.map((item) => (
+        {subtasks.map((subtask) => (
           <Stack
-            key={item.id}
+            key={subtask.id}
             p="4"
             boxShadow="lg"
             m="4"
             borderRadius="sm"
-            backgroundColor={item.isCompleted ? "gray" : ""}
+            backgroundColor={subtask.isCompleted ? "gray" : ""}
           >
             <Stack
               direction={{ base: "column", md: "row" }}
               justifyContent="space-between"
             >
               <Box fontSize={{ base: "lg" }} textAlign="center" maxW={"4xl"}>
-                {item.title}
+                {subtask.title}
               </Box>
               <Stack direction={{ base: "column", md: "row" }}>
                 <Button variant="outline" colorScheme="green">
@@ -187,14 +166,16 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
                 </Button>
                 <Button
                   onClick={async () => {
-                    await toggleItemDone(item.id); // async/awaitを使っています
-                    calculateNumberOfCheckedToPercentage();
+                    await toggleItemDone(subtask.id); // async/awaitを使っています
+
                     notify();
                   }}
-                  backgroundColor={item.isCompleted ? "green.600" : "green.500"}
+                  backgroundColor={
+                    subtask.isCompleted ? "green.600" : "green.500"
+                  }
                 >
                   <Text color={"white"}>
-                    {item.isCompleted ? "完了！" : "未完了"}
+                    {subtask.isCompleted ? "完了！" : "未完了"}
                   </Text>
                 </Button>
                 <Toaster />
@@ -211,12 +192,12 @@ export const BattleTask: NextPage<Props> = ({ subtasks, imageurl }) => {
         <Text fontSize={"lg"} as="b">
           あと
           <Text as="i" fontSize="4xl" display="inline" pr={2}>
-            {progressValuePercentate}
+            {progressValue}
           </Text>
           ％です。
         </Text>
         <CustomProgressBar
-          value={progressValuePercentate}
+          value={progressValue}
           width="full"
           size="lg"
           height="25px"
@@ -246,23 +227,26 @@ export default BattleTask;
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
-  let subtasks: subTaskForDisplay[] = [];
+  let initialTask: taskForDisplay;
   const id = context.params?.id;
-  console.log(id, "これが呼び出すtaskAPIデータ");
+
   try {
-    const response = await axios.get<subTaskForDisplay[]>(
-      `http://localhost:3000/api/subtask?forGetTaskId=${id}`
-    );
-    subtasks = response.data;
-    console.log(response.data, "これが呼び出すsubtaskAPIデータ");
+    initialTask = await prisma.task.findUnique({
+      where: {
+        id: Number(id),
+      },
+      include: {
+        subTasks: true,
+      },
+    });
   } catch (error) {
-    console.error("subtaskAPIの呼び出しに失敗:", error);
+    console.error("prisma.task.finduniqueの呼び出しに失敗:", error);
   }
   const imageurl = context.query.imageurl as string | undefined;
 
   return {
     props: {
-      subtasks,
+      initialTask,
       imageurl,
     },
   };

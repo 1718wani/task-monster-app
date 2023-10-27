@@ -37,7 +37,7 @@ export const OngoingBattleComponents = () => {
   console.log(userId, "userId in OngoingBattleComponent");
 
   const {
-    data: tasks,
+    data: tasks = [],
     error,
     isLoading,
   } = useSWR<taskForDisplay[], Error>(() => urlWithUserId(userId), fetcher);
@@ -77,66 +77,68 @@ export const OngoingBattleComponents = () => {
     SendReactionNotification(receiverUserId, reaction);
   };
 
-  if (error)
-    return <div>APIからデータの取得に失敗しました: {error.message}</div>;
-  if (isLoading) return <Spinner />;
-
   return (
     <>
       <Heading size="md" px={4} pt={2} pb={1}>
         Ongoing Battle
       </Heading>
 
-      {tasks?.map((task) => (
-        <>
-          <Divider pt={2} />
+      {/* {isLoading ? (
+        <Spinner />
+      ) : error ? (
+        <div>APIからデータの取得に失敗しました: {error?.message}</div>
+      ) : (
+        tasks.map((task) => (
+          <>
+            <Divider pt={2} />
 
-          <Menu placement="right">
-            <Tooltip label="コメントを送る" aria-label="A tooltip">
-              <MenuButton
-                as={Button}
-                w={"full"}
-                h={"full"}
-                background={"white"}
-              >
-                <HStack pt={2} pb={1} px={4} cursor="pointer">
-                  <Avatar size={"md"} src={task.imageData ?? undefined} />
+            <Menu placement="right">
+              <Tooltip label="コメントを送る" aria-label="A tooltip">
+                <MenuButton
+                  as={Button}
+                  w={"full"}
+                  h={"full"}
+                  background={"white"}
+                >
+                  <HStack pt={2} pb={1} px={4} cursor="pointer">
+                    <Avatar size={"md"} src={task.imageData ?? undefined} />
 
-                  <Stack width={"full"}>
-                    <Heading size="xs">{task.title}</Heading>
+                    <Stack width={"full"}>
+                      <Heading size="xs">{task.title}</Heading>
 
-                    <CustomProgressBar
-                      w={"full"}
-                      size="sm"
-                      value={
-                        task.subTasks.filter((subTask) => subTask.isCompleted)
-                          .length / task.subTasks.length
-                      }
-                    />
-                  </Stack>
-                </HStack>
-              </MenuButton>
-            </Tooltip>
-            <MenuList>
-              <MenuItem
-                onClick={async () => await sendComment(task.userId, "👏")}
-              >
-                ナイスファイト！👏
-              </MenuItem>
-              <MenuItem
-                onClick={async () => await sendComment(task.userId, "💪")}
-              >
-                わたしも頑張ります！💪
-              </MenuItem>
-              <MenuItem
-                onClick={async () => await sendComment(task.userId, "🤝")}
-              >
-                一緒にがんばりましょう🤝
-              </MenuItem>
-            </MenuList>
-          </Menu>
-        </>
-      ))}
+                      <CustomProgressBar
+                        w={"full"}
+                        size="sm"
+                        value={
+                          task.subTasks.filter((subTask) => subTask.isCompleted)
+                            .length / task.subTasks.length
+                        }
+                      />
+                    </Stack>
+                  </HStack>
+                </MenuButton>
+              </Tooltip>
+              <MenuList>
+                <MenuItem
+                  onClick={async () => await sendComment(task.userId, "👏")}
+                >
+                  ナイスファイト！👏
+                </MenuItem>
+                <MenuItem
+                  onClick={async () => await sendComment(task.userId, "💪")}
+                >
+                  わたしも頑張ります！💪
+                </MenuItem>
+                <MenuItem
+                  onClick={async () => await sendComment(task.userId, "🤝")}
+                >
+                  一緒にがんばりましょう🤝
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </>
+        ))
+      )} */}
     </>
   );
 };
