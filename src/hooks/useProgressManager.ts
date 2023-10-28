@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { useInterval } from "usehooks-ts";
-import { ProgressStatus } from "~/types/AllTypes";
+import type { ProgressStatus } from "~/types/AllTypes";
 
 type UseProgressOptions = {
   initialProgressValue: number;
   targetProgressValue: number;
   onReachZero: () => void;
+  
 };
 
 export const UseProgressManager = ({
   initialProgressValue, // 最初のProgressValue
   targetProgressValue, // 目指すprogressValue
-  onReachZero, // ０になったときに呼び出す
+  onReachZero, // ０になったときに呼び出すメソッド
 }: UseProgressOptions) => {
   const [progressValue, setProgressValue] = useState(initialProgressValue);
   const [progressStatus, setProgressStatus] =
@@ -36,7 +37,7 @@ export const UseProgressManager = ({
         }
       }
     },
-    progressStatus !== "neutral" ? 30 : null // 1秒ごとに実行
+    progressStatus !== "neutral" ? 30 : null 
   );
 
   return {

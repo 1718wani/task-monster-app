@@ -83,7 +83,7 @@ export const OngoingBattleComponents = () => {
         Ongoing Battle
       </Heading>
 
-      {/* {isLoading ? (
+      {isLoading ? (
         <Spinner />
       ) : error ? (
         <div>APIからデータの取得に失敗しました: {error?.message}</div>
@@ -138,7 +138,7 @@ export const OngoingBattleComponents = () => {
             </Menu>
           </>
         ))
-      )} */}
+      )}
     </>
   );
 };
