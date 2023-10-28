@@ -13,11 +13,12 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { motion } from 'framer-motion';
 
 import { useRouter } from "next/router";
 import { Controller, useForm } from "react-hook-form";
 import type { formInputs } from "~/pages/createtodo";
-import { subTaskForDisplay } from "~/types/AllTypes";
+import type { subTaskForDisplay } from "~/types/AllTypes";
 
 interface TodoProps {
   id: number;
@@ -57,11 +58,6 @@ export default function TodoCardComponent({
     (subTask) => subTask.isCompleted
   ).length;
   const totalSubTasks = subTasks.length;
-
-  console.log(totalMinutes, "totalMinutesの値");
-  console.log(remainingMinutes, "remainingMinutesの値");
-  console.log(totalSubTasks, "totalSubTasksの値");
-  console.log(completedSubTasks, "totalSubTasksの値");
 
   const onSubmit = async (data: formInputs) => {
     console.log(data, "編集コンポーネントにおける送信データ");
@@ -193,7 +189,13 @@ export default function TodoCardComponent({
     );
   } else {
     return (
+      
       <Center py={6}>
+        <motion.div
+            initial={{ x: 0, y: 0 }}
+            whileHover={{ x: -3, y: -3 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          >
         <Stack
           borderWidth="1px"
           borderRadius="lg"
@@ -331,7 +333,9 @@ export default function TodoCardComponent({
             </Stack>
           </Stack>
         </Stack>
+        </motion.div>
       </Center>
+      
     );
   }
 }

@@ -49,7 +49,7 @@ export const BattleTask: NextPage<forBattleProps> = ({
     : initialTask.totalMinutes * 60;
 
   // useTimerを初期化
-  const { totalSeconds, seconds, minutes, hours, pause } = useTimer({
+  const { totalSeconds, seconds, minutes, hours, pause,restart, } = useTimer({
     expiryTimestamp: new Date(
       new Date().getTime() + remainingTotalSeconds * 1000
     ),
@@ -186,6 +186,10 @@ export const BattleTask: NextPage<forBattleProps> = ({
         <Button onClick={backToHome}>
           <Text>戦闘を中断する</Text>
         </Button>
+        <Button onClick={backToHome}>
+          <Text>時間を延長する</Text>
+        </Button>
+
       </Stack>
 
       <VStack spacing={6} w={"full"} maxW={"xl"} ml="100">
