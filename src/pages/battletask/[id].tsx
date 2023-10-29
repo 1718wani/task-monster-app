@@ -9,6 +9,16 @@ import {
   Text,
   VStack,
   useDisclosure,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverHeader,
+  PopoverBody,
+  PopoverFooter,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverAnchor,
+  Select,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { TimerOfTaskComponent } from "~/components/TimerOfTaskComponent";
@@ -35,6 +45,15 @@ type forBattleProps = {
   imageurl: string | undefined;
 };
 
+const options = [
+  { value: 1 },
+  { value: 5 },
+  { value: 10 },
+  { value: 15 },
+  { value: 30 },
+  { value: 60 },
+];
+
 export const BattleTask: NextPage<forBattleProps> = ({
   initialTask,
   imageurl,
@@ -42,28 +61,53 @@ export const BattleTask: NextPage<forBattleProps> = ({
   const [subtasks, setSubtasks] = useState<subTaskForDisplay[]>(
     initialTask.subTasks
   );
+  const [minutesToAdd, setMinutesToAdd] = useState<number>(0);
+  console.log(minutesToAdd, "minutesToAddの時間チェック");
 
   // remainingMinutesが定義されたらそちらを採用、そうでなければ減った時間のそちらを採用
-  const remainingTotalSeconds = initialTask.remainingMinutes
-    ? initialTask.remainingMinutes * 60
-    : initialTask.totalMinutes * 60;
-
+  const [remainingTotalSeconds, setRemainingTotalSeconds] = useState(
+    initialTask.remainingMinutes
+      ? initialTask.remainingMinutes * 60
+      : initialTask.totalMinutes * 60
+  );
+  console.log(remainingTotalSeconds, "remainingTotalSecondsの時間チェック");
   // useTimerを初期化
-  const { totalSeconds, seconds, minutes, hours, pause,restart, } = useTimer({
+  const { totalSeconds, seconds, minutes, hours, pause, restart } = useTimer({
     expiryTimestamp: new Date(
       new Date().getTime() + remainingTotalSeconds * 1000
     ),
     onExpire: () => onTimeUpOpen(),
   });
+  console.log(totalSeconds, "totalSecondsの時間チェック");
 
   const { progressValue, setProgressStatus } = UseProgressManager({
     initialProgressValue: calculateSubtaskPercentage(subtasks),
     targetProgressValue: calculateSubtaskPercentage(subtasks),
+    duration: 30,
     onReachZero: () => {
       pause();
       onOpen();
     },
   });
+
+  const {
+    progressValue: progressValueOfTimer,
+    setProgressStatus: setProgressStatusOfTimer,
+    progressStatus: progressStatusOfTimer,
+  } = UseProgressManager({
+    initialProgressValue: totalSeconds,
+    targetProgressValue: totalSeconds + minutesToAdd * 60,
+    duration: 1,
+    onReachCountingUpTarget: () => {
+      const _newRemainingTotalSeconds = totalSeconds + minutesToAdd * 60;
+      restart(
+        new Date(new Date().getTime() + _newRemainingTotalSeconds * 1000)
+      );
+      setMinutesToAdd(0);
+    },
+  });
+
+  console.log(progressValueOfTimer, "ProgressValueofTimerの状態だ！！！");
 
   const notify = () => toast("サブタスク完了によるこうげき", { icon: "👏" });
   // タスクを全部コンプリートした時のモーダル開閉の状態管理
@@ -74,6 +118,13 @@ export const BattleTask: NextPage<forBattleProps> = ({
     onOpen: onTimeUpOpen,
     onClose: onTimeUpClose,
   } = useDisclosure();
+
+  const {
+    isOpen: popoverIsOpen,
+    onOpen: openPopover,
+    onClose: closePopover,
+  } = useDisclosure();
+
   const router = useRouter();
 
   // サブタスクの完了状態を変更する関数
@@ -133,6 +184,27 @@ export const BattleTask: NextPage<forBattleProps> = ({
     currentTimeStamp.getSeconds() + remainingTotalSeconds
   );
 
+  const handleToAddMinutesChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = event.target.value;
+    setMinutesToAdd(parseInt(value, 10));
+  };
+
+  const handleToAddMinutesSubmit = () => {
+    closePopover()
+    // まずタイマーをストップする。
+    pause();
+    // 新しい remainingTotalSeconds の値を計算
+    const newRemainingTotalSeconds = totalSeconds + minutesToAdd * 60;
+
+    // 現在の時間にminutestoadd×60を足す。
+    setRemainingTotalSeconds(newRemainingTotalSeconds);
+    // セットする。
+    setProgressStatusOfTimer("isCountingUp");
+    // タイマーをリスタートさせる。
+  };
+
   return (
     <SimpleGrid columns={2} spacingY="10px" py={20}>
       <Stack spacing={6} w={"full"} maxW={"xl"} ml="100">
@@ -142,6 +214,8 @@ export const BattleTask: NextPage<forBattleProps> = ({
           seconds={seconds}
           minutes={minutes}
           hours={hours}
+          progressValueOfTimer={progressValueOfTimer}
+          progressStatusOfTimer={progressStatusOfTimer}
         />
 
         {subtasks.map((subtask) => (
@@ -167,7 +241,6 @@ export const BattleTask: NextPage<forBattleProps> = ({
                 <Button
                   onClick={async () => {
                     await toggleItemDone(subtask.id); // async/awaitを使っています
-
                     notify();
                   }}
                   backgroundColor={
@@ -186,10 +259,45 @@ export const BattleTask: NextPage<forBattleProps> = ({
         <Button onClick={backToHome}>
           <Text>戦闘を中断する</Text>
         </Button>
-        <Button onClick={backToHome}>
-          <Text>時間を延長する</Text>
-        </Button>
+        <Popover isOpen={popoverIsOpen} onClose={closePopover}>
+          <PopoverTrigger>
+            <Button onClick={openPopover}>体力（残り時間）を回復する</Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader>残り時間を追加しますか？</PopoverHeader>
 
+            <PopoverBody>
+              元々の設定時間を超えた時間には設定できません。
+              <Select onChange={handleToAddMinutesChange}>
+                <option value={0} disabled selected >
+                  選択してください
+                </option>
+                {options.map((option) => (
+                  <option
+                    key={option.value}
+                    disabled={
+                      initialTask.totalMinutes * 60 <
+                      totalSeconds + option.value * 60
+                    }
+                    value={option.value}
+                  >
+                    {option.value}
+                  </option>
+                ))}
+              </Select>
+              <Button
+                colorScheme="blue"
+                mr={3}
+                onClick={handleToAddMinutesSubmit}
+                isDisabled={minutesToAdd === 0}
+              >
+                {minutesToAdd}分だけ延長する
+              </Button>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
       </Stack>
 
       <VStack spacing={6} w={"full"} maxW={"xl"} ml="100">

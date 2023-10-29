@@ -1,5 +1,6 @@
 import { Text, VStack } from "@chakra-ui/react";
 import CustomProgressBar from "./ui/ProgressBar/CustomeProgressBar";
+import { ProgressStatus } from "~/types/AllTypes";
 
 type TimerOfTaskComponentProps = {
   totalSeconds: number;
@@ -7,6 +8,8 @@ type TimerOfTaskComponentProps = {
   minutes: number;
   hours: number;
   initialAmountSeconds: number;
+  progressValueOfTimer:number;
+  progressStatusOfTimer:ProgressStatus;
 };
 
 export const TimerOfTaskComponent = ({
@@ -15,6 +18,8 @@ export const TimerOfTaskComponent = ({
   minutes,
   hours,
   initialAmountSeconds,
+  progressValueOfTimer,
+  progressStatusOfTimer,
 }: TimerOfTaskComponentProps) => {
 
   return (
@@ -32,7 +37,8 @@ export const TimerOfTaskComponent = ({
           width={"full"}
           size="lg"
           height="25px"
-          value={(totalSeconds / initialAmountSeconds) * 100}
+          // isCountingDownのときだけ、progressValueOfTimerの値が表示される。
+          value={( ((progressStatusOfTimer === "isCountingUp")? progressValueOfTimer : totalSeconds) / initialAmountSeconds) * 100}
         />
       </VStack>
     </>
