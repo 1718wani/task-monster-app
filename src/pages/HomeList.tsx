@@ -17,13 +17,14 @@ import TodoCardComponent from "~/components/TodoCardComponent";
 import { motion } from "framer-motion";
 
 import { useRouter } from "next/router";
-import type { tasksForHome } from "~/types/AllTypes";
 import { CreateNewMonsterButtonComponent } from "~/components/ui/Button/Button";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { NotificationReceiverComponent } from "~/components/NotificationReceiverComponent";
+import type { HomeProps } from ".";
 
-export default function HomeList({ tasks }: tasksForHome) {
+
+export default function HomeList({ tasks }: HomeProps) {
   const router = useRouter();
   const { data: session, status } = useSession(); // status を取得
   const [isLoaded, setIsLoaded] = useState(false); // 新しい state を追加

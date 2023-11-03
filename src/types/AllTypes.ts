@@ -49,9 +49,25 @@ export type taskForDisplay = {
   subTasks: subTaskForDisplay[]; 
 };
 
-export type tasksForHome = {
-  tasks: taskForDisplay[];
+export type responseDisplay = {
+  id: number;
+  userId: string;
+  user: any;
+  title: string;
+  detail: string | null;
+  category: string | null;
+  isOnGoing: boolean;
+  isCompleted: boolean;
+  subTasks: subTaskForDisplay[];
+  imageData: string | null;
+  isPublished: boolean;
+  publishedTitle: string | null;
+  publishedStrategy: string | null;
+  totalMinutes: number | null;
+  remainingMinutes: number | null;
 };
+
+
 
 export type subTaskForDisplay = {
   id: string;

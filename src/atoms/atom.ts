@@ -1,4 +1,4 @@
 import { atom } from 'jotai'
-import { atomWithStorage } from 'jotai/utils'
+import type { taskForDisplay } from "~/types/AllTypes";
 
-export const userIdAtom = atomWithStorage('userId', null)
+export const HomeTasksAtom = atom<taskForDisplay[]>( [])
