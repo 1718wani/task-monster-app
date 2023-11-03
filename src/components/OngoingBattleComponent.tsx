@@ -40,7 +40,7 @@ export const OngoingBattleComponents = () => {
     data: tasks = [],
     error,
     isLoading,
-  } = useSWR<taskForDisplay[], Error>(() => urlWithUserId(userId), fetcher);
+  } = useSWR<taskForDisplay[], Error>(() => urlWithUserId(userId), fetcher, { refreshInterval: 10000 });
   console.log(tasks, "サイドバーのTasks");
 
   useEffect(() => {
